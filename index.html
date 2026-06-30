@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="CineBook — Premium movie ticket booking experience. Web Dev, Python OOP, and Java Collections integrated." />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>CineBook — Movie Tickets</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="styles/style.css?v=5" />
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Vue Templates -->
+  <script type="text/x-template" id="card-form-template">
+    <div class="card-page-container">
+      <div class="card-form-main">
+        <button class="btn-cancel" @click="goBack" style="border:none; background:transparent; color:var(--text-secondary); cursor:pointer; display:inline-flex; align-items:center; gap:6px; margin-bottom:16px; padding:0;">&lsaquo; Back</button>
+        <h2>Card Details</h2>
+
+        <div v-if="savedCards.length > 0" class="saved-cards-section">
+          <h3>Saved Cards</h3>
+          <div v-for="(card, i) in savedCards" :key="i" class="saved-card-item" @click="selectSavedCard(card)">
+            <span class="card-badge">{{ card.getBank() }}</span>
+            <span class="card-info">{{ card.getCardType() }} ****{{ card.getLast4() }}</span>
+          </div>
+          <hr />
+        </div>
+
+        <div class="card-form">
+          <label>Card Number</label>
+          <input v-model="cardNumber" @input="onCardNumberInput" placeholder="4242 4242 4242 4242" />
+          <div class="demo-card-presets" style="margin-top: 6px; display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 0.72rem; color: var(--text-secondary);">Demo (Click to fill):</span>
+            <button type="button" @click="cardNumber = '4242 4242 4242 4242'; cardName = 'Jane Doe'; cardExpiry = '12/28'; cardCvv = '321'; password = 'StrongP@ss12'" class="demo-card-chip" style="padding: 2px 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-secondary); border-radius: var(--radius-pill); font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">Visa</button>
+            <button type="button" @click="cardNumber = '5105 1051 0510 5105'; cardName = 'John Doe'; cardExpiry = '08/29'; cardCvv = '123'; password = 'StrongP@ss12'" class="demo-card-chip" style="padding: 2px 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-secondary); border-radius: var(--radius-pill); font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">Mastercard</button>
+            <button type="button" @click="cardNumber = '6011 1111 1111 1117'; cardName = 'Dev User'; cardExpiry = '05/30'; cardCvv = '789'; password = 'StrongP@ss12'" class="demo-card-chip" style="padding: 2px 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-secondary); border-radius: var(--radius-pill); font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">RuPay</button>
+          </div>
+          <span v-if="cardType" class="card-type-badge">{{ cardType }}</span>
+          <div v-if="cardNumber.length > 0" :class="['luhn-check-indicator', isLuhnValid ? 'valid' : 'invalid']">
+            <span v-if="isLuhnValid">✅ Card passes Luhn's Algorithm check</span>
+            <span v-else>❌ Invalid card number (Luhn's Algorithm failed)</span>
+          </div>
+
+          <label>Cardholder Name</label>
+          <input v-model="cardName" placeholder="John Doe" />
+
+          <div class="card-row">
+            <div class="card-field">
+              <label>Expiry</label>
+              <input v-model="cardExpiry" @input="onExpiryInput" placeholder="MM/YY" />
+            </div>
+            <div class="card-field">
+              <label>CVV</label>
+              <input v-model="cardCvv" placeholder="***" maxlength="4" />
+            </div>
+          </div>
+
+          <label>Bank</label>
+          <select v-model="selectedBank">
+            <option v-for="b in banks" :key="b" :value="b">{{ b }}</option>
+          </select>
+
+          <label>Set Account Password</label>
+          <input v-model="password" type="password" placeholder="Create a password for your account" />
+          <div v-if="password" class="vue-strength-meter">
+            <div class="strength-bar-bg">
+              <div class="strength-bar-fill" :style="{ width: strengthPct + '%', backgroundColor: strengthColor }"></div>
+            </div>
+            <span class="strength-label" :style="{ color: strengthColor }">
+              {{ strengthInfo.strength }} ({{ strengthInfo.score }}/5)
+            </span>
+            <ul v-if="strengthInfo.issues.length > 0" class="strength-issues">
+              <li v-for="(issue, i) in strengthInfo.issues" :key="i">{{ issue }}</li>
+            </ul>
+          </div>
+          <!-- Cross-Module Python Audit Check Warning -->
+          <div v-if="pythonAuditAlert" class="cross-module-warning">
+            <span class="warning-icon">⚠️</span>
+            <div class="warning-msg">
+              <strong>Python Auditor Check:</strong> {{ pythonAuditAlert }}
+            </div>
+          </div>
+
+          <button class="btn-submit-card" :disabled="!isFormValid" @click="submitCard">Save & Pay</button>
+        </div>
+      </div>
+
+      <!-- Java Inspector Sidebar -->
+      <div class="java-inspector-sidebar">
+        <h3>☕ Java OOP Inspector</h3>
+        
+        <div class="inspector-card">
+          <h4>Polymorphism: Password Policy</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0 0 8px 0;">
+            Select Java Policy class to evaluate account password:
+          </p>
+          <div class="policy-options-group">
+            <button :class="['policy-btn', activePolicy === 'WeakPolicy' ? 'active' : '']" @click="activePolicy = 'WeakPolicy'">
+              WeakPolicy
+            </button>
+            <button :class="['policy-btn', activePolicy === 'StrongPolicy' ? 'active' : '']" @click="activePolicy = 'StrongPolicy'">
+              StrongPolicy
+            </button>
+          </div>
+          
+          <div v-if="password" :class="['policy-status', isPasswordPolicyPassed ? 'valid' : 'invalid']">
+            <span v-if="isPasswordPolicyPassed">✔ Passes {{ activePolicy }}</span>
+            <span v-else>✘ Fails {{ activePolicy }}</span>
+          </div>
+          <div v-else class="policy-status invalid">
+            Enter a password
+          </div>
+        </div>
+
+        <div class="inspector-card">
+          <h4>Java ArrayList Collection Visualizer</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0 0 8px 0;">
+            Visualizing <code>CardManager.getAllCards()</code> memory state:
+          </p>
+          <div class="array-list-visualizer">
+            <div class="array-list-header">ArrayList&lt;Card&gt; (size: {{ savedCards.length }})</div>
+            <div v-if="savedCards.length === 0" style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 12px 0;">
+              [Empty Collection]
+            </div>
+            <div v-else class="array-list-items">
+              <div v-for="(card, i) in savedCards" :key="i" class="array-list-node">
+                <div class="node-index">[{{ i }}]</div>
+                <div class="node-data">{{ card.getBank() }} - ****{{ card.getLast4() }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Java File I/O Streams Panel -->
+        <div class="inspector-card">
+          <h4>Java File I/O Simulation</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0 0 6px 0;">
+            Simulated <code>BufferedWriter</code> output stream logs:
+          </p>
+          <div class="file-io-console">
+            <div v-for="(log, idx) in fileIoLogs" :key="idx" :class="['file-io-log-line', log.type]">
+              {{ log.text }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Java Exception Stack Trace Console -->
+        <div class="inspector-card" style="border-color: rgba(244, 67, 54, 0.4);">
+          <h4 style="color: #F44336; display: flex; align-items: center; gap: 6px;">
+            ⚠️ Java Exceptions Console
+          </h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0 0 6px 0;">
+            Simulated <code>try-catch</code> exception logging:
+          </p>
+          <div class="file-io-console" style="color: #ff8a80; background: #1a0b0b; border-color: rgba(244, 67, 54, 0.2); max-height: 140px;">
+            <div v-if="javaExceptions.length === 0" style="color: #81c784; font-size: 0.75rem;">
+              [Status: Running cleanly. No exceptions caught.]
+            </div>
+            <div v-else v-for="(exc, idx) in javaExceptions" :key="idx" class="file-io-log-line">
+              <span style="color: #ff5252; font-weight: bold;">Exception: </span>{{ exc.name }}
+              <br/><span style="color: rgba(255,255,255,0.5); font-size: 0.65rem; padding-left: 10px;">at {{ exc.stack }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="inspector-card" style="font-size: 0.75rem;">
+          <h4>Class Diagram Specs</h4>
+          <ul style="padding-left: 16px; margin: 4px 0 0 0; color: var(--text-muted);">
+            <li><strong>Card:</strong> Encapsulated private attributes</li>
+            <li><strong>CardManager:</strong> Emulates Java ArrayList serialization</li>
+            <li><strong>PasswordPolicy:</strong> Abstract base with polymorphic validate()</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/x-template" id="java-checker-template">
+    <div class="java-checker-page">
+      <h2>Java Password Toolbox</h2>
+      <p class="checker-subtitle">Java PasswordAnalyzer + PasswordGenerator + PasswordPolicy — re-implemented in Vue</p>
+
+      <div class="checker-tabs">
+        <button :class="activeTab === 'checker' ? 'tab-active' : ''" @click="activeTab = 'checker'">Checker</button>
+        <button :class="activeTab === 'generator' ? 'tab-active' : ''" @click="activeTab = 'generator'">Generator</button>
+        <button :class="activeTab === 'policy' ? 'tab-active' : ''" @click="activeTab = 'policy'">Policy</button>
+      </div>
+
+      <div v-if="activeTab === 'checker'" class="checker-tab">
+        <label>Enter Password:</label>
+        <input v-model="password" type="text" placeholder="Type a password to analyze..." class="checker-input" />
+        <div v-if="analyzerResult" class="checker-results">
+          <div class="checker-score">
+            <div class="score-bar-bg">
+              <div class="score-bar-fill" :style="{ width: scorePercent + '%', backgroundColor: scoreColor }"></div>
+            </div>
+            <span class="score-text">Score: {{ analyzerResult.score }}/10 ({{ analyzerResult.strength }})</span>
+          </div>
+          <h4>Character Types Found:</h4>
+          <div class="types-found">
+            <span v-for="t in analyzerResult.types" :key="t" class="type-badge">{{ t }}</span>
+          </div>
+          <h4>Rules Checked:</h4>
+          <ul class="rules-list">
+            <li v-for="(rule, i) in analyzerResult.rules" :key="i" class="rule-item">{{ rule }}</li>
+          </ul>
+        </div>
+      </div>
+
+      <div v-if="activeTab === 'generator'" class="generator-tab">
+        <label>Password Length:</label>
+        <input v-model.number="genLength" type="number" min="4" max="64" class="gen-input" />
+        <div class="gen-options">
+          <label><input type="checkbox" v-model="genNumbers" /> Include Numbers</label>
+          <label><input type="checkbox" v-model="genSymbols" /> Include Symbols</label>
+        </div>
+        <button class="btn-generate" @click="generatePwd">Generate Password</button>
+        <div v-if="generatedPassword" class="generated-result">
+          <div class="gen-password">{{ generatedPassword }}</div>
+          <button class="btn-copy" @click="copyPassword">Copy</button>
+          <button class="btn-use" @click="useGenerated">Check Strength</button>
+        </div>
+      </div>
+
+      <div v-if="activeTab === 'policy'" class="policy-tab">
+        <label>Enter Password to Validate:</label>
+        <input v-model="policyPassword" @input="checkPolicy" type="text" placeholder="Test against policies..." class="checker-input" />
+        <div v-if="policyResult" class="policy-results">
+          <div class="policy-card weak-policy">
+            <h4>WeakPolicy (min 4 chars)</h4>
+            <p :class="policyResult.weakValid ? 'valid' : 'invalid'">{{ policyResult.weakMsg }}</p>
+          </div>
+          <div class="policy-card strong-policy">
+            <h4>StrongPolicy (min 12 chars + number + special + uppercase)</h4>
+            <p :class="policyResult.strongValid ? 'valid' : 'invalid'">{{ policyResult.strongMsg }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="checker-syllabus">
+        <h4>Java Syllabus Demonstrated</h4>
+        <ul>
+          <li>PasswordAnalyzer: HashMap (history), HashSet (types), ArrayList (rules)</li>
+          <li>PasswordGenerator: StringBuilder, Random, char pooling</li>
+          <li>PasswordPolicy: Abstract class with validate()</li>
+          <li>StrongPolicy / WeakPolicy: Inheritance + polymorphism</li>
+          <li>File I/O: Saved passwords to localStorage (matching Java FileWriter)</li>
+        </ul>
+      </div>
+    </div>
+  </script>
+
+  <!-- React CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <!-- Vue 3 CDN -->
+  <script crossorigin src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+  <!-- Data -->
+  <script src="src/data/movies.js"></script>
+
+  <!-- Security Layer -->
+  <script src="src/security/passwordCheck.js"></script>
+  <script src="src/security/lengthCheck.js"></script>
+  <script src="src/security/complexityCheck.js"></script>
+  <script src="src/security/patternCheck.js"></script>
+  <script src="src/security/passwordAuditor.js"></script>
+  <script src="src/security/passwordAnalyzer.js"></script>
+  <script src="src/security/passwordGenerator.js"></script>
+  <script src="src/security/passwordPolicy.js"></script>
+  <script src="src/security/cardManager.js"></script>
+  <script src="src/security/passwordManager.js"></script>
+
+  <!-- Components -->
+  <script src="src/components/Navbar.js"></script>
+  <script src="src/components/MovieCard.js"></script>
+  <script src="src/components/Seat.js"></script>
+  <script src="src/components/SeatMap.js?v=3"></script>
+  <script src="src/components/ShowtimeSelector.js"></script>
+  <script src="src/components/BookingSummary.js"></script>
+  <script src="src/components/PasswordStrengthMeter.js"></script>
+
+  <!-- Context -->
+  <script src="src/context/BookingContext.js"></script>
+  <script src="src/context/PaymentContext.js"></script>
+
+  <!-- Pages (React) -->
+  <script src="src/pages/Home.js"></script>
+  <script src="src/pages/MovieDetail.js"></script>
+  <script src="src/pages/BookingPage.js"></script>
+  <script src="src/pages/ConfirmPage.js"></script>
+  <script src="src/pages/MyBookings.js"></script>
+  <script src="src/pages/Payment.js"></script>
+  <script src="src/pages/OtpVerify.js"></script>
+  <script src="src/pages/PaymentDone.js"></script>
+  <script src="src/pages/AdminMovie.js"></script>
+  <script src="src/pages/PythonAudit.js"></script>
+
+  <!-- Pages (Vue component definitions) -->
+  <script src="src/pages/CardForm.js"></script>
+  <script src="src/pages/JavaChecker.js"></script>
+
+  <!-- App -->
+  <script src="src/App.js"></script>
+  <script src="src/main.js"></script>
+
+  <!-- Vue Mount (Robust polling mechanism) -->
+  <script>
+    (function () {
+      var vueInstances = {};
+
+      function destroyVue(id) {
+        if (vueInstances[id]) {
+          try { vueInstances[id].unmount(); } catch (e) {}
+          delete vueInstances[id];
+        }
+      }
+
+      function mountVueApp(containerId, appDefinition) {
+        destroyVue(containerId);
+        var el = document.getElementById(containerId);
+        if (!el) return false;
+        if (el.__vue_app__) return true;
+        try {
+          var app = Vue.createApp(appDefinition);
+          vueInstances[containerId] = app.mount('#' + containerId);
+          return true;
+        } catch (e) {
+          console.error('Vue mount error for ' + containerId, e);
+          return false;
+        }
+      }
+
+      function ensureVueMounted() {
+        var hash = window.location.hash;
+        if (hash === '#/card-form') {
+          mountVueApp('vue-card-form-root', CardForm);
+        } else if (hash === '#/java-checker') {
+          mountVueApp('vue-java-checker-root', JavaChecker);
+        } else {
+          destroyVue('vue-card-form-root');
+          destroyVue('vue-java-checker-root');
+        }
+      }
+
+      function pollForVue() {
+        var hash = window.location.hash;
+        if (hash === '#/card-form' || hash === '#/java-checker') {
+          var id = hash === '#/card-form' ? 'vue-card-form-root' : 'vue-java-checker-root';
+          if (!document.getElementById(id) || !document.getElementById(id).__vue_app__) {
+            ensureVueMounted();
+          }
+        }
+        setTimeout(pollForVue, 200);
+      }
+
+      window.addEventListener('hashchange', function () {
+        setTimeout(ensureVueMounted, 50);
+      });
+
+      document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(ensureVueMounted, 100);
+        setTimeout(pollForVue, 300);
+      });
+    })();
+  </script>
+</body>
+</html>

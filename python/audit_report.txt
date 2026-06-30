@@ -1,0 +1,143 @@
+============================================================
+                    PASSWORD AUDIT REPORT
+============================================================
+  Total passwords loaded:    18
+  Unique passwords:          15
+  Duplicate passwords:       3
+============================================================
+
+  --- DUPLICATE PASSWORDS ---
+    * P@ssw0rd!
+    * weak
+
+------------------------------------------------------------
+  PASSWORD AUDIT DETAILS
+------------------------------------------------------------
+
+  Password: Hello123
+  Score:    4/5 (Strong)
+    - missing special character
+
+  Password: weak [DUPLICATE]
+  Score:    1/5 (Weak)
+    - too short (4 chars, need 8)
+    - missing uppercase letter
+    - missing digit
+    - missing special character
+
+  Password: P@ssw0rd! [DUPLICATE]
+  Score:    5/5 (Strong)
+    (no issues)
+
+  Password: password123
+  Score:    0/5 (Weak)
+    - missing uppercase letter
+    - missing special character
+    - matches a known weak password
+
+  Password: Admin123
+  Score:    4/5 (Strong)
+    - missing special character
+
+  Password: abc
+  Score:    0/5 (Weak)
+    - too short (3 chars, need 8)
+    - missing uppercase letter
+    - missing digit
+    - missing special character
+    - too short (less than 4 characters)
+
+  Password: StrongP@ss1
+  Score:    5/5 (Strong)
+    (no issues)
+
+  Password: qwerty
+  Score:    0/5 (Weak)
+    - too short (6 chars, need 8)
+    - missing uppercase letter
+    - missing digit
+    - missing special character
+    - matches a known weak password
+
+  Password: LetMeIn42
+  Score:    4/5 (Strong)
+    - missing special character
+
+  Password: Test@123
+  Score:    5/5 (Strong)
+    (no issues)
+
+  Password: alllowertwo
+  Score:    2/5 (Medium)
+    - missing uppercase letter
+    - missing digit
+    - missing special character
+
+  Password: 12345
+  Score:    0/5 (Weak)
+    - too short (5 chars, need 8)
+    - missing uppercase letter
+    - missing lowercase letter
+    - missing special character
+    - contains only digits
+
+  Password: ADMIN123
+  Score:    3/5 (Medium)
+    - missing lowercase letter
+    - missing special character
+
+  Password: C0mpl3x!ty
+  Score:    5/5 (Strong)
+    (no issues)
+
+  Password: pass
+  Score:    1/5 (Weak)
+    - too short (4 chars, need 8)
+    - missing uppercase letter
+    - missing digit
+    - missing special character
+
+------------------------------------------------------------
+  SUMMARY BY STRENGTH
+------------------------------------------------------------
+  Weak passwords:   6
+    - weak (Score: 1/5)
+    - password123 (Score: 0/5)
+    - abc (Score: 0/5)
+    - qwerty (Score: 0/5)
+    - 12345 (Score: 0/5)
+    - pass (Score: 1/5)
+  Medium passwords: 2
+    - alllowertwo (Score: 2/5)
+    - ADMIN123 (Score: 3/5)
+  Strong passwords: 7
+    - Hello123 (Score: 4/5)
+    - P@ssw0rd! (Score: 5/5)
+    - Admin123 (Score: 4/5)
+    - StrongP@ss1 (Score: 5/5)
+    - LetMeIn42 (Score: 4/5)
+    - Test@123 (Score: 5/5)
+    - C0mpl3x!ty (Score: 5/5)
+
+------------------------------------------------------------
+  ALL RESULTS (Tuples)
+------------------------------------------------------------
+    ('Hello123', 4, ['missing special character'], 'Strong', False)
+    ('weak', 1, ['too short (4 chars, need 8)', 'missing uppercase letter', 'missing digit', 'missing special character'], 'Weak', True)
+    ('P@ssw0rd!', 5, [], 'Strong', True)
+    ('password123', 0, ['missing uppercase letter', 'missing special character', 'matches a known weak password'], 'Weak', False)
+    ('Admin123', 4, ['missing special character'], 'Strong', False)
+    ('abc', 0, ['too short (3 chars, need 8)', 'missing uppercase letter', 'missing digit', 'missing special character', 'too short (less than 4 characters)'], 'Weak', False)
+    ('StrongP@ss1', 5, [], 'Strong', False)
+    ('qwerty', 0, ['too short (6 chars, need 8)', 'missing uppercase letter', 'missing digit', 'missing special character', 'matches a known weak password'], 'Weak', False)
+    ('LetMeIn42', 4, ['missing special character'], 'Strong', False)
+    ('Test@123', 5, [], 'Strong', False)
+    ('alllowertwo', 2, ['missing uppercase letter', 'missing digit', 'missing special character'], 'Medium', False)
+    ('12345', 0, ['too short (5 chars, need 8)', 'missing uppercase letter', 'missing lowercase letter', 'missing special character', 'contains only digits'], 'Weak', False)
+    ('ADMIN123', 3, ['missing lowercase letter', 'missing special character'], 'Medium', False)
+    ('C0mpl3x!ty', 5, [], 'Strong', False)
+    ('pass', 1, ['too short (4 chars, need 8)', 'missing uppercase letter', 'missing digit', 'missing special character'], 'Weak', False)
+
+============================================================
+                    END OF REPORT
+============================================================
