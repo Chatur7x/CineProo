@@ -50,104 +50,19 @@ This report compiles all front-to-back developments completed across the previou
 *   **Preset Chips**: Added click-to-fill chips for Visa, Mastercard, and RuPay that auto-populate valid Luhn-passing credentials and policy-compliant passwords.
 *   **Flexible Default Policy**: Changed the default active policy to `WeakPolicy` to prevent users from being blocked by complex password requirements while testing.
 
----
+## 7. Basic System Architecture
+Below is the simplified architecture layout representing the integration of the React/Vue frontend UI with the Java and Python syllabus modules:
 
-## 7. Architecture Diagrams
-
-### 7.1 System Component Architecture
-This diagram outlines the CineBook Single Page Application structure and how the Java and Python syllabus concepts interface with the React/Vue frontend views:
-
-```mermaid
-graph TD
-    subgraph Frontend_Client [React SPA Host]
-        Navbar[Navbar Component]
-        Router[Hash Router]
-        Context[Booking Context State]
-        
-        subgraph Pages [Pages & Modules]
-            Home[Home / Movies List]
-            Detail[Movie Detail & Showtime Picker]
-            Booking[Booking Page / Seating Map]
-            Confirm[Confirm Page / Invoice]
-            Payment[Payment Selection]
-            VueForm[Vue CardForm Bridge]
-            Otp[OTP Verification Page]
-            Success[PaymentDone / Success Screen]
-            Bookings[My Bookings & 3D Ticket Pass]
-            PythonPage[Python Password Audit Center]
-        end
-    end
-
-    subgraph Java_Syllabus_Layer [Java Security & Payment Integration]
-        CardMgr[CardManager & ArrayList Store]
-        Policy[PasswordPolicy - Abstraction]
-        WeakPol[WeakPolicy / StrongPolicy - Polymorphism]
-        FileIO[BufferedWriter / FileWriter Logs]
-        Mutex[Thread Mutex Concurrency Lock]
-        Exc[Exception Stack Trace Console]
-    end
-
-    subgraph Python_Syllabus_Layer [Python OOP & Audit Integration]
-        Audit[PasswordAuditor ABC checks]
-        LenCheck[LengthCheck / ComplexityCheck]
-        Shell[Python Shell Simulator]
-        Matplotlib[Matplotlib Canvas Plot Exporter]
-    end
-
-    %% Connections
-    Router --> Home
-    Router --> Detail
-    Router --> Booking
-    Router --> Confirm
-    Router --> Payment
-    Router --> VueForm
-    Router --> Otp
-    Router --> Success
-    Router --> Bookings
-    Router --> PythonPage
-
-    Booking <--> Context
-    Booking --> Mutex
-    VueForm --> CardMgr
-    VueForm --> Policy
-    VueForm --> FileIO
-    VueForm --> Exc
-    Bookings --> Success
-    PythonPage --> Audit
-    PythonPage --> Shell
-    PythonPage --> Matplotlib
 ```
-
-### 7.2 End-to-End Booking & Validation Sequence Flow
-This sequence flow represents the chronological order of data checking, multi-language validation, and file recording during a booking:
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Student / User
-    participant UI as Frontend View (React/Vue)
-    participant Mutex as Java Mutex Lock (Thread-0)
-    participant Policy as Java PasswordPolicy
-    participant Audit as Python PasswordAuditor
-    participant IO as Java BufferedWriter
-    participant Ticket as 3D Interactive Ticket
-
-    User->>UI: Select Movie, Theatre & Showtime
-    UI->>Mutex: Request Seating Map Access
-    Mutex->>UI: Acquire Mutex Seating Lock (5 Min hold)
-    User->>UI: Select Seats (Stepper Synchronized)
-    UI->>User: Confirm Invoice Details (Total + Tax)
-    User->>UI: Go to Checkout (Open Card Form)
-    User->>UI: Input Card Details & Password
-    UI->>UI: Verify Luhn Check mod-10 Checksum
-    UI->>Policy: Validate Password (Weak/Strong Policy)
-    UI->>Audit: Run Python Auditor (Length, Complexity, Pattern Checks)
-    Note over UI,Audit: Throws Stack Trace Exception on console if invalid
-    User->>UI: Click Save & Pay (Valid inputs)
-    UI->>IO: BufferedWriter serialize Card to cards.dat log
-    User->>UI: Verify 2FA OTP Code
-    UI->>UI: Confirm Booking & Save to LocalStorage
-    UI->>Ticket: Generate 3D Interactive Entry Pass
-    User->>Ticket: Move Mouse (3D Tilt Transform)
-    User->>Ticket: Click QR Code (Verify & Grant Entry)
+               ┌────────────────────────────────────────────────────────┐
+               │                     CINEBOOK UI                        │
+               │            React SPA (Home, Detail, Seating)           │
+               └────────────────────┬───────────────┬───────────────────┘
+                                    │               │
+       ┌────────────────────────────▼──┐         ┌──▼────────────────────────────┐
+       │          JAVA MODULE          │         │         PYTHON MODULE         │
+       │   - Card Checks (Luhn)        │         │   - Password Audit ABCs       │
+       │   - Mutex Seating Hold        │         │   - Shell Interactive Console │
+       │   - Exception Console Traces  │         │   - Matplotlib Analytics Plot │
+       └───────────────────────────────┘         └───────────────────────────────┘
 ```
