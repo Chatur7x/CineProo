@@ -1,0 +1,28 @@
+sequenceDiagram
+    autonumber
+    actor User as Student / User
+    participant UI as Frontend View (React/Vue)
+    participant Mutex as Java Mutex Lock (Thread-0)
+    participant Policy as Java PasswordPolicy
+    participant Audit as Python PasswordAuditor
+    participant IO as Java BufferedWriter
+    participant Ticket as 3D Interactive Ticket
+
+    User->>UI: Select Movie, Theatre & Showtime
+    UI->>Mutex: Request Seating Map Access
+    Mutex->>UI: Acquire Mutex Seating Lock (5 Min hold)
+    User->>UI: Select Seats (Stepper Synchronized)
+    UI->>User: Confirm Invoice Details (Total + Tax)
+    User->>UI: Go to Checkout (Open Card Form)
+    User->>UI: Input Card Details & Password
+    UI->>UI: Verify Luhn Check mod-10 Checksum
+    UI->>Policy: Validate Password (Weak/Strong Policy)
+    UI->>Audit: Run Python Auditor (Length, Complexity, Pattern Checks)
+    Note over UI,Audit: Throws Stack Trace Exception on console if invalid
+    User->>UI: Click Save & Pay (Valid inputs)
+    UI->>IO: BufferedWriter serialize Card to cards.dat log
+    User->>UI: Verify 2FA OTP Code
+    UI->>UI: Confirm Booking & Save to LocalStorage
+    UI->>Ticket: Generate 3D Interactive Entry Pass
+    User->>Ticket: Move Mouse (3D Tilt Transform)
+    User->>Ticket: Click QR Code (Verify & Grant Entry)

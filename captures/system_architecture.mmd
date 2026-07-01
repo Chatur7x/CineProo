@@ -1,0 +1,58 @@
+graph TD
+    subgraph Frontend_Client [React SPA Host]
+        Navbar[Navbar Component]
+        Router[Hash Router]
+        Context[Booking Context State]
+        
+        subgraph Pages [Pages & Modules]
+            Home[Home / Movies List]
+            Detail[Movie Detail & Showtime Picker]
+            Booking[Booking Page / Seating Map]
+            Confirm[Confirm Page / Invoice]
+            Payment[Payment Selection]
+            VueForm[Vue CardForm Bridge]
+            Otp[OTP Verification Page]
+            Success[PaymentDone / Success Screen]
+            Bookings[My Bookings & 3D Ticket Pass]
+            PythonPage[Python Password Audit Center]
+        end
+    end
+
+    subgraph Java_Syllabus_Layer [Java Security & Payment Integration]
+        CardMgr[CardManager & ArrayList Store]
+        Policy[PasswordPolicy - Abstraction]
+        WeakPol[WeakPolicy / StrongPolicy - Polymorphism]
+        FileIO[BufferedWriter / FileWriter Logs]
+        Mutex[Thread Mutex Concurrency Lock]
+        Exc[Exception Stack Trace Console]
+    end
+
+    subgraph Python_Syllabus_Layer [Python OOP & Audit Integration]
+        Audit[PasswordAuditor ABC checks]
+        LenCheck[LengthCheck / ComplexityCheck]
+        Shell[Python Shell Simulator]
+        Matplotlib[Matplotlib Canvas Plot Exporter]
+    end
+
+    %% Connections
+    Router --> Home
+    Router --> Detail
+    Router --> Booking
+    Router --> Confirm
+    Router --> Payment
+    Router --> VueForm
+    Router --> Otp
+    Router --> Success
+    Router --> Bookings
+    Router --> PythonPage
+
+    Booking <--> Context
+    Booking --> Mutex
+    VueForm --> CardMgr
+    VueForm --> Policy
+    VueForm --> FileIO
+    VueForm --> Exc
+    Bookings --> Success
+    PythonPage --> Audit
+    PythonPage --> Shell
+    PythonPage --> Matplotlib
