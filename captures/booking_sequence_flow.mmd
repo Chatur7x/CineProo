@@ -1,28 +1,47 @@
 sequenceDiagram
     autonumber
-    actor User as Student / User
-    participant UI as Frontend View (React/Vue)
-    participant Mutex as Java Mutex Lock (Thread-0)
-    participant Policy as Java PasswordPolicy
-    participant Audit as Python PasswordAuditor
-    participant IO as Java BufferedWriter
-    participant Ticket as 3D Interactive Ticket
+    participant U as 👤 User
+    participant R as ⚛️ React SPA
+    participant V as 💚 Vue Checkout
+    participant J as ☕ Java Engine
+    participant P as 🐍 Python Auditor
+    participant S as 💾 Storage
 
-    User->>UI: Select Movie, Theatre & Showtime
-    UI->>Mutex: Request Seating Map Access
-    Mutex->>UI: Acquire Mutex Seating Lock (5 Min hold)
-    User->>UI: Select Seats (Stepper Synchronized)
-    UI->>User: Confirm Invoice Details (Total + Tax)
-    User->>UI: Go to Checkout (Open Card Form)
-    User->>UI: Input Card Details & Password
-    UI->>UI: Verify Luhn Check mod-10 Checksum
-    UI->>Policy: Validate Password (Weak/Strong Policy)
-    UI->>Audit: Run Python Auditor (Length, Complexity, Pattern Checks)
-    Note over UI,Audit: Throws Stack Trace Exception on console if invalid
-    User->>UI: Click Save & Pay (Valid inputs)
-    UI->>IO: BufferedWriter serialize Card to cards.dat log
-    User->>UI: Verify 2FA OTP Code
-    UI->>UI: Confirm Booking & Save to LocalStorage
-    UI->>Ticket: Generate 3D Interactive Entry Pass
-    User->>Ticket: Move Mouse (3D Tilt Transform)
-    User->>Ticket: Click QR Code (Verify & Grant Entry)
+    rect rgb(26, 26, 46)
+        Note over U,R: Phase 1 — Movie Selection
+        U->>R: Browse Movies & Select Showtime
+        R->>R: Load MovieDetail with Context
+        U->>R: Pick Seats on Interactive Map
+        R->>J: Request Mutex Seat Lock
+        J-->>R: Thread-0 locks seats (5 min hold)
+    end
+
+    rect rgb(22, 33, 62)
+        Note over R,J: Phase 2 — Payment & Validation
+        R->>V: Mount Vue Card Checkout Form
+        U->>V: Enter Card Number & Expiry
+        V->>J: Validate via Luhn Algorithm
+        J-->>V: ✅ Card Valid / ❌ Card Invalid
+        J->>J: Track Card Object in ArrayList
+        J->>S: BufferedWriter → cards.dat
+    end
+
+    rect rgb(26, 26, 46)
+        Note over V,P: Phase 3 — Password Security Audit
+        U->>V: Enter Password
+        V->>J: Java Weak/Strong Check
+        V->>P: Python Abstract Audit
+        P->>P: Length + Complexity + Pattern Checks
+        P-->>V: Audit Score & Vulnerability Report
+        P->>P: Plot Stats via Matplotlib Canvas
+    end
+
+    rect rgb(15, 52, 96)
+        Note over U,S: Phase 4 — OTP & Ticket Generation
+        R->>U: Display OTP Verification Panel
+        U->>R: Submit 6-Digit OTP Code
+        R->>S: Save Booking to LocalStorage
+        R->>U: Generate 3D Interactive Ticket
+        U->>R: Click QR Code → Verify Entry
+        R-->>U: ✅ Status: Verified + Timestamp
+    end

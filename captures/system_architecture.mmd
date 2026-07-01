@@ -1,58 +1,49 @@
-graph TD
-    subgraph Frontend_Client [React SPA Host]
-        Navbar[Navbar Component]
-        Router[Hash Router]
-        Context[Booking Context State]
-        
-        subgraph Pages [Pages & Modules]
-            Home[Home / Movies List]
-            Detail[Movie Detail & Showtime Picker]
-            Booking[Booking Page / Seating Map]
-            Confirm[Confirm Page / Invoice]
-            Payment[Payment Selection]
-            VueForm[Vue CardForm Bridge]
-            Otp[OTP Verification Page]
-            Success[PaymentDone / Success Screen]
-            Bookings[My Bookings & 3D Ticket Pass]
-            PythonPage[Python Password Audit Center]
-        end
+graph TB
+    subgraph CLIENT["🌐 Frontend Client Layer"]
+        direction TB
+        REACT["⚛️ React SPA<br/>Hash Router • Context Store<br/>Component Lifecycle"]
+        VUE["💚 Vue.js Containers<br/>Card Checkout Form<br/>Password Audit Console"]
+        UI["🎨 UI Engine<br/>Frosted Glass Panels<br/>3D Seat Animations<br/>Responsive Grid"]
     end
 
-    subgraph Java_Syllabus_Layer [Java Security & Payment Integration]
-        CardMgr[CardManager & ArrayList Store]
-        Policy[PasswordPolicy - Abstraction]
-        WeakPol[WeakPolicy / StrongPolicy - Polymorphism]
-        FileIO[BufferedWriter / FileWriter Logs]
-        Mutex[Thread Mutex Concurrency Lock]
-        Exc[Exception Stack Trace Console]
+    subgraph JAVA["☕ Java Security Layer"]
+        direction TB
+        CARD["💳 Card Validator<br/>Luhn Algorithm<br/>Getter/Setter Encapsulation"]
+        THREAD["🔒 Thread Manager<br/>Mutex Seat Lock<br/>Synchronized Blocks"]
+        FILE["📁 File Logger<br/>BufferedWriter<br/>cards.dat Output"]
+        MEM["📊 Memory Tracker<br/>ArrayList Visualization<br/>Object Allocation"]
     end
 
-    subgraph Python_Syllabus_Layer [Python OOP & Audit Integration]
-        Audit[PasswordAuditor ABC checks]
-        LenCheck[LengthCheck / ComplexityCheck]
-        Shell[Python Shell Simulator]
-        Matplotlib[Matplotlib Canvas Plot Exporter]
+    subgraph PYTHON["🐍 Python Audit Layer"]
+        direction TB
+        ABC["🏗️ Abstract Base Class<br/>PasswordCheck Interface<br/>Polymorphic Rules"]
+        CLI["💻 CLI Console<br/>Command Parser<br/>Terminal Emulator"]
+        PLOT["📈 Stats Visualizer<br/>Matplotlib Canvas<br/>Bar Chart Reports"]
     end
 
-    %% Connections
-    Router --> Home
-    Router --> Detail
-    Router --> Booking
-    Router --> Confirm
-    Router --> Payment
-    Router --> VueForm
-    Router --> Otp
-    Router --> Success
-    Router --> Bookings
-    Router --> PythonPage
+    subgraph DATA["💾 Data & Storage"]
+        LS["🗄️ LocalStorage<br/>Bookings • Sessions"]
+        DISK["📀 Disk Files<br/>cards.dat • logs.txt"]
+    end
 
-    Booking <--> Context
-    Booking --> Mutex
-    VueForm --> CardMgr
-    VueForm --> Policy
-    VueForm --> FileIO
-    VueForm --> Exc
-    Bookings --> Success
-    PythonPage --> Audit
-    PythonPage --> Shell
-    PythonPage --> Matplotlib
+    REACT -->|"mounts"| VUE
+    REACT -->|"renders"| UI
+    VUE -->|"validates card"| CARD
+    VUE -->|"audits password"| ABC
+    CARD -->|"locks seats"| THREAD
+    CARD -->|"writes log"| FILE
+    CARD -->|"tracks objects"| MEM
+    ABC -->|"parses commands"| CLI
+    ABC -->|"plots results"| PLOT
+    THREAD -->|"reserves"| LS
+    FILE -->|"persists"| DISK
+
+    classDef clientStyle fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#fff
+    classDef javaStyle fill:#16213e,stroke:#0f3460,stroke-width:2px,color:#fff
+    classDef pythonStyle fill:#1a1a2e,stroke:#e9c46a,stroke-width:2px,color:#fff
+    classDef dataStyle fill:#0f3460,stroke:#53a8b6,stroke-width:2px,color:#fff
+
+    class REACT,VUE,UI clientStyle
+    class CARD,THREAD,FILE,MEM javaStyle
+    class ABC,CLI,PLOT pythonStyle
+    class LS,DISK dataStyle
