@@ -1,365 +1,278 @@
 import os
 from pptx import Presentation
-from pptx.util import Inches, Pt
+from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 
-def apply_background(slide):
-    # Apply solid dark charcoal background (RGB 20, 20, 20)
-    background = slide.background
-    fill = background.fill
-    fill.solid()
-    fill.fore_color.rgb = RGBColor(20, 20, 20)
+# ── Color Palette ──
+BG       = RGBColor(18, 18, 24)
+GOLD     = RGBColor(228, 179, 99)
+WHITE    = RGBColor(245, 245, 250)
+GRAY     = RGBColor(180, 180, 190)
+MUTED    = RGBColor(120, 120, 135)
+PURPLE   = RGBColor(124, 107, 255)
+TEAL     = RGBColor(78, 205, 196)
+RED      = RGBColor(255, 107, 107)
+CODE_BG  = RGBColor(12, 12, 18)
 
-def add_slide_header(slide, title_text, category_text="CINEBOOK PRO"):
-    # Add a thin gold category tag at the top
-    cat_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(11.73), Inches(0.4))
-    tf_cat = cat_box.text_frame
-    tf_cat.word_wrap = True
-    tf_cat.margin_left = tf_cat.margin_right = tf_cat.margin_top = tf_cat.margin_bottom = 0
-    p_cat = tf_cat.paragraphs[0]
-    p_cat.text = category_text.upper()
-    p_cat.font.name = 'Arial'
-    p_cat.font.size = Pt(9)
-    p_cat.font.bold = True
-    p_cat.font.color.rgb = RGBColor(228, 179, 99)  # Warm Amber Gold
-    
-    # Add the main slide title
-    title_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.7), Inches(11.73), Inches(0.8))
-    tf_title = title_box.text_frame
-    tf_title.word_wrap = True
-    tf_title.margin_left = tf_title.margin_right = tf_title.margin_top = tf_title.margin_bottom = 0
-    p_title = tf_title.paragraphs[0]
-    p_title.text = title_text
-    p_title.font.name = 'Arial'
-    p_title.font.size = Pt(28)
-    p_title.font.bold = True
-    p_title.font.color.rgb = RGBColor(255, 255, 255) # Pure White
+def bg(slide):
+    fill = slide.background.fill
+    fill.solid()
+    fill.fore_color.rgb = BG
+
+def tag(slide, text, left=0.7, top=0.35):
+    box = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(4), Inches(0.3))
+    p = box.text_frame.paragraphs[0]
+    p.text = text.upper()
+    p.font.name = 'Arial'
+    p.font.size = Pt(9)
+    p.font.bold = True
+    p.font.color.rgb = GOLD
+    box.text_frame.word_wrap = False
+
+def title(slide, text, left=0.7, top=0.6, size=28):
+    box = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(11.5), Inches(0.9))
+    p = box.text_frame.paragraphs[0]
+    p.text = text
+    p.font.name = 'Arial'
+    p.font.size = Pt(size)
+    p.font.bold = True
+    p.font.color.rgb = WHITE
+    box.text_frame.word_wrap = True
+
+def subtitle(slide, text, left=0.7, top=1.45, width=10):
+    box = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(0.6))
+    tf = box.text_frame
+    tf.word_wrap = True
+    p = tf.paragraphs[0]
+    p.text = text
+    p.font.name = 'Arial'
+    p.font.size = Pt(14)
+    p.font.color.rgb = GRAY
+
+def add_text_block(slide, left, top, width, height, items, header=None, header_color=GOLD):
+    """items = list of (bold_title, body_text) tuples"""
+    box = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(height))
+    tf = box.text_frame
+    tf.word_wrap = True
+    tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+
+    if header:
+        p = tf.paragraphs[0]
+        p.text = header.upper()
+        p.font.name = 'Arial'
+        p.font.size = Pt(11)
+        p.font.bold = True
+        p.font.color.rgb = header_color
+        p.space_after = Pt(14)
+        first = False
+    else:
+        first = True
+
+    for btitle, body in items:
+        p = tf.paragraphs[0] if first else tf.add_paragraph()
+        first = False
+        # bullet title
+        r1 = p.add_run()
+        r1.text = "•  " + btitle + "  "
+        r1.font.name = 'Arial'
+        r1.font.size = Pt(12)
+        r1.font.bold = True
+        r1.font.color.rgb = WHITE
+        # body
+        r2 = p.add_run()
+        r2.text = body
+        r2.font.name = 'Arial'
+        r2.font.size = Pt(11)
+        r2.font.bold = False
+        r2.font.color.rgb = GRAY
+        p.space_after = Pt(12)
+        p.space_before = Pt(4)
+
+def add_code(slide, left, top, width, height, code_text):
+    box = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(height))
+    tf = box.text_frame
+    tf.word_wrap = True
+    tf.margin_left = Pt(16)
+    tf.margin_right = Pt(16)
+    tf.margin_top = Pt(14)
+    tf.margin_bottom = Pt(14)
+    p = tf.paragraphs[0]
+    p.text = code_text
+    p.font.name = 'Consolas'
+    p.font.size = Pt(10.5)
+    p.font.color.rgb = RGBColor(220, 220, 230)
+    p.line_spacing = Pt(17)
+    # dark bg rectangle behind it
+    from pptx.util import Emu
+    shape = slide.shapes.add_shape(
+        1, Inches(left), Inches(top), Inches(width), Inches(height)  # MSO_SHAPE.RECTANGLE = 1
+    )
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = CODE_BG
+    shape.line.fill.background()
+    shape.shadow.inherit = False
+    # move code box to front
+    sp = box._element
+    sp.getparent().append(sp)
+
+def add_img(slide, path, left, top, width):
+    if os.path.exists(path):
+        slide.shapes.add_picture(path, Inches(left), Inches(top), width=Inches(width))
 
 def main():
     prs = Presentation()
-    # Set to widescreen 16:9 layout
-    prs.slide_width = Inches(13.333)
+    prs.slide_width  = Inches(13.333)
     prs.slide_height = Inches(7.5)
-    
-    blank_layout = prs.slide_layouts[6] # Blank slide layout
+    blank = prs.slide_layouts[6]
 
-    # =========================================================================
-    # SLIDE 1: COVER
-    # =========================================================================
-    slide1 = prs.slides.add_slide(blank_layout)
-    apply_background(slide1)
-    
-    # Title & Subtitle block
-    title_box = slide1.shapes.add_textbox(Inches(1.0), Inches(2.2), Inches(11.3), Inches(3.0))
-    tf1 = title_box.text_frame
-    tf1.word_wrap = True
-    tf1.margin_left = tf1.margin_right = tf1.margin_top = tf1.margin_bottom = 0
-    
-    p1 = tf1.paragraphs[0]
-    p1.text = "CINEBOOK PRO"
-    p1.font.name = 'Arial'
-    p1.font.size = Pt(48)
-    p1.font.bold = True
-    p1.font.color.rgb = RGBColor(228, 179, 99) # Gold Accent
-    p1.space_after = Pt(12)
-    
-    p2 = tf1.add_paragraph()
-    p2.text = "A Hybrid Multi-Language Movie Ticketing & Security Architecture"
-    p2.font.name = 'Arial'
-    p2.font.size = Pt(22)
-    p2.font.color.rgb = RGBColor(255, 255, 255)
-    p2.space_after = Pt(24)
-    
-    p3 = tf1.add_paragraph()
-    p3.text = "Internship Project Presentation  |  Department of Cyber Security"
-    p3.font.name = 'Arial'
-    p3.font.size = Pt(14)
-    p3.font.color.rgb = RGBColor(160, 160, 160)
-    
-    # Student Info block at bottom right
-    info_box = slide1.shapes.add_textbox(Inches(7.5), Inches(5.2), Inches(4.8), Inches(1.5))
-    tf_info = info_box.text_frame
-    tf_info.word_wrap = True
-    tf_info.margin_left = tf_info.margin_right = tf_info.margin_top = tf_info.margin_bottom = 0
-    p_info = tf_info.paragraphs[0]
-    p_info.text = "Submitted by:"
-    p_info.font.bold = True
-    p_info.font.size = Pt(12)
-    p_info.font.color.rgb = RGBColor(228, 179, 99)
-    
-    p_name = tf_info.add_paragraph()
-    p_name.text = "Kolluri Chaturvedhi Narsimha\nHTNo: 24EG109A28\nAnurag University"
-    p_name.font.size = Pt(12)
-    p_name.font.color.rgb = RGBColor(220, 220, 220)
+    # ═══════════════════════════════════════════════════════════
+    # SLIDE 1 — COVER
+    # ═══════════════════════════════════════════════════════════
+    s = prs.slides.add_slide(blank); bg(s)
 
-    # =========================================================================
-    # SLIDE 2: TECH STACK & SYSTEM OVERVIEW
-    # =========================================================================
-    slide2 = prs.slides.add_slide(blank_layout)
-    apply_background(slide2)
-    add_slide_header(slide2, "Project Overview & Technology Stack")
-    
-    # Left column: Description
-    desc_box = slide2.shapes.add_textbox(Inches(0.8), Inches(1.8), Inches(5.2), Inches(4.8))
-    tf_desc = desc_box.text_frame
-    tf_desc.word_wrap = True
-    tf_desc.margin_left = tf_desc.margin_right = tf_desc.margin_top = tf_desc.margin_bottom = 0
-    
-    p_overview = tf_desc.paragraphs[0]
-    p_overview.text = "SYSTEM CONCEPT"
-    p_overview.font.bold = True
-    p_overview.font.size = Pt(14)
-    p_overview.font.color.rgb = RGBColor(228, 179, 99)
-    p_overview.space_after = Pt(8)
-    
-    p_body = tf_desc.add_paragraph()
-    p_body.text = "CineBook Pro is designed to demonstrate multi-framework web orchestration coupled with native backend validation workflows. It mounts independent frontend frameworks side-by-side while utilizing robust multi-language backends to validate core ticketing details."
-    p_body.font.size = Pt(13)
-    p_body.font.color.rgb = RGBColor(220, 220, 220)
-    p_body.space_after = Pt(20)
-    
-    p_core = tf_desc.add_paragraph()
-    p_core.text = "KEY ATTRIBUTES"
-    p_core.font.bold = True
-    p_core.font.size = Pt(14)
-    p_core.font.color.rgb = RGBColor(228, 179, 99)
-    p_core.space_after = Pt(8)
-    
-    bullets = [
-        "React-Vue frontend interoperability.",
-        "Java-based security & memory visualization.",
-        "Python password strength classification.",
-        "AI-assisted prompt engineering development."
-    ]
-    for b in bullets:
-        pb = tf_desc.add_paragraph()
-        pb.text = "• " + b
-        pb.font.size = Pt(12)
-        pb.font.color.rgb = RGBColor(180, 180, 180)
-        pb.space_after = Pt(6)
+    # Main title
+    box = s.shapes.add_textbox(Inches(1), Inches(1.6), Inches(11), Inches(4))
+    tf = box.text_frame; tf.word_wrap = True
 
-    # Right column: Tech Stack Grid
-    grid_box = slide2.shapes.add_textbox(Inches(6.6), Inches(1.8), Inches(5.9), Inches(4.8))
-    tf_grid = grid_box.text_frame
-    tf_grid.word_wrap = True
-    tf_grid.margin_left = tf_grid.margin_right = tf_grid.margin_top = tf_grid.margin_bottom = 0
-    
-    p_tech = tf_grid.paragraphs[0]
-    p_tech.text = "TECHNOLOGY DETAILS"
-    p_tech.font.bold = True
-    p_tech.font.size = Pt(14)
-    p_tech.font.color.rgb = RGBColor(228, 179, 99)
-    p_tech.space_after = Pt(14)
-    
-    techs = [
-        ("React (Host SPA)", "Manages global state, routing, and interactive ticket stubs."),
-        ("Vue.js (Widgets)", "Encapsulates modular UI cards and password audit screens."),
-        ("Java (Security Engine)", "Executes Luhn validations, logs file operations, and runs thread locks."),
-        ("Python (Auditor)", "Runs structural validations and generates statistical plots."),
-        ("Prompt Engineering", "Utilized AI prompts to debug code and optimize database locking.")
-    ]
-    for title, desc in techs:
-        pt = tf_grid.add_paragraph()
-        pt.text = title + "  —  "
-        pt.font.bold = True
-        pt.font.size = Pt(12)
-        pt.font.color.rgb = RGBColor(255, 255, 255)
-        
-        run = pt.add_run()
-        run.text = desc
-        run.font.bold = False
-        run.font.color.rgb = RGBColor(180, 180, 180)
-        pt.space_after = Pt(12)
+    p = tf.paragraphs[0]
+    p.text = "CINEBOOK PRO"
+    p.font.name = 'Arial'; p.font.size = Pt(54); p.font.bold = True; p.font.color.rgb = GOLD
+    p.space_after = Pt(8)
 
-    # =========================================================================
-    # SLIDE 3: SYSTEM ARCHITECTURE
-    # =========================================================================
-    slide3 = prs.slides.add_slide(blank_layout)
-    apply_background(slide3)
-    add_slide_header(slide3, "System Component Architecture")
-    
-    # Left: Image
-    if os.path.exists("captures/system_architecture.png"):
-        slide3.shapes.add_picture("captures/system_architecture.png", Inches(0.8), Inches(1.8), width=Inches(5.6))
-    
-    # Right: Bullet points
-    details_box = slide3.shapes.add_textbox(Inches(6.8), Inches(1.8), Inches(5.7), Inches(4.8))
-    tf_details = details_box.text_frame
-    tf_details.word_wrap = True
-    tf_details.margin_left = tf_details.margin_right = tf_details.margin_top = tf_details.margin_bottom = 0
-    
-    p_details_title = tf_details.paragraphs[0]
-    p_details_title.text = "COMPONENT ARCHITECTURE"
-    p_details_title.font.bold = True
-    p_details_title.font.size = Pt(14)
-    p_details_title.font.color.rgb = RGBColor(228, 179, 99)
-    p_details_title.space_after = Pt(12)
-    
-    arch_points = [
-        ("React Host & Vue Containers", "The React host utilizes hash routing and context managers while dynamically mounting Vue checkout widgets in the container DOM."),
-        ("Java Security Middleware", "Implements Private encasing, card verification through Luhn's algorithm, transaction serialization via BufferedWriter, and concurrency checks."),
-        ("Python Auditor & Terminal Console", "Derived password checking strategies from abstract parents, displaying evaluation stats on a dynamic Matplotlib chart."),
-        ("File I/O & Storage Layer", "Tracks local session variables inside LocalStorage and stores credit details securely to disk in cards.dat.")
-    ]
-    for header, desc in arch_points:
-        pt = tf_details.add_paragraph()
-        pt.text = "• " + header + "\n"
-        pt.font.bold = True
-        pt.font.size = Pt(12)
-        pt.font.color.rgb = RGBColor(255, 255, 255)
-        pt.space_before = Pt(4)
-        
-        run = pt.add_run()
-        run.text = desc
-        run.font.bold = False
-        run.font.color.rgb = RGBColor(170, 170, 170)
-        pt.space_after = Pt(10)
+    p2 = tf.add_paragraph()
+    p2.text = "An Integrated Multi-Language Movie Ticketing\n& Security Architecture"
+    p2.font.name = 'Arial'; p2.font.size = Pt(24); p2.font.color.rgb = WHITE
+    p2.space_after = Pt(28)
 
-    # =========================================================================
-    # SLIDE 4: TRANSACTION SEQUENCE FLOW
-    # =========================================================================
-    slide4 = prs.slides.add_slide(blank_layout)
-    apply_background(slide4)
-    add_slide_header(slide4, "End-to-End Booking Sequence Flow")
-    
-    # Left: Image
-    if os.path.exists("captures/booking_sequence_flow.png"):
-        slide4.shapes.add_picture("captures/booking_sequence_flow.png", Inches(0.8), Inches(1.8), width=Inches(5.6))
-        
-    # Right: Phases list
-    seq_box = slide4.shapes.add_textbox(Inches(6.8), Inches(1.8), Inches(5.7), Inches(4.8))
-    tf_seq = seq_box.text_frame
-    tf_seq.word_wrap = True
-    tf_seq.margin_left = tf_seq.margin_right = tf_seq.margin_top = tf_seq.margin_bottom = 0
-    
-    p_seq_title = tf_seq.paragraphs[0]
-    p_seq_title.text = "TRANSACTIONAL PHASES"
-    p_seq_title.font.bold = True
-    p_seq_title.font.size = Pt(14)
-    p_seq_title.font.color.rgb = RGBColor(228, 179, 99)
-    p_seq_title.space_after = Pt(12)
-    
-    phases = [
-        ("Phase 1: Seating Lock", "A synchronized block launches Thread-0 on showtime selection, locking the coordinates for 5 minutes to avoid conflicts."),
-        ("Phase 2: Card Verification", "The Luhn validation checksum checks bank card details, recording verified structures to disk via BufferedWriter."),
-        ("Phase 3: Security Audit", "Validates password strengths. Java tracks simple length restrictions while Python computes entropy and displays charts."),
-        ("Phase 4: Ticket Issue", "Generates interactive 3D ticket stubs with embedded SVG QR codes, triggering validation confirmations on click.")
-    ]
-    for header, desc in phases:
-        pt = tf_seq.add_paragraph()
-        pt.text = "• " + header + "\n"
-        pt.font.bold = True
-        pt.font.size = Pt(12)
-        pt.font.color.rgb = RGBColor(255, 255, 255)
-        pt.space_before = Pt(4)
-        
-        run = pt.add_run()
-        run.text = desc
-        run.font.bold = False
-        run.font.color.rgb = RGBColor(170, 170, 170)
-        pt.space_after = Pt(10)
+    p3 = tf.add_paragraph()
+    p3.text = "Internship Project Presentation  •  Department of Cyber Security"
+    p3.font.name = 'Arial'; p3.font.size = Pt(13); p3.font.color.rgb = MUTED
 
-    # =========================================================================
-    # SLIDE 5: CODE INTEGRATION (React + Vue)
-    # =========================================================================
-    slide5 = prs.slides.add_slide(blank_layout)
-    apply_background(slide5)
-    add_slide_header(slide5, "Technical Focus: React & Vue Interoperability")
-    
-    # Left: Explanation
-    info_box = slide5.shapes.add_textbox(Inches(0.8), Inches(1.8), Inches(5.2), Inches(4.8))
-    tf_info = info_box.text_frame
-    tf_info.word_wrap = True
-    tf_info.margin_left = tf_info.margin_right = tf_info.margin_top = tf_info.margin_bottom = 0
-    
-    p_header = tf_info.paragraphs[0]
-    p_header.text = "INTEROPERABILITY DETAILS"
-    p_header.font.bold = True
-    p_header.font.size = Pt(14)
-    p_header.font.color.rgb = RGBColor(228, 179, 99)
-    p_header.space_after = Pt(12)
-    
-    details = [
-        ("React DOM Wrapper", "React coordinates the global session state and mounts a wrapper div container. It manages component visibility and transitions."),
-        ("Vue Widget Mounts", "Inside React's lifecycle hooks, custom Vue apps are initialized and mounted to the ref wrappers. On unmounting, state cleanup is performed."),
-        ("State Synchronization", "Data is bridged using custom browser event listeners, synchronizing updates in seat counts and invoices between React and Vue components.")
-    ]
-    for header, desc in details:
-        pt = tf_info.add_paragraph()
-        pt.text = "• " + header + "\n"
-        pt.font.bold = True
-        pt.font.size = Pt(12)
-        pt.font.color.rgb = RGBColor(255, 255, 255)
-        pt.space_before = Pt(6)
-        
-        run = pt.add_run()
-        run.text = desc
-        run.font.bold = False
-        run.font.color.rgb = RGBColor(170, 170, 170)
-        pt.space_after = Pt(10)
-        
-    # Right: Code block
-    code_box = slide5.shapes.add_textbox(Inches(6.5), Inches(1.8), Inches(6.0), Inches(4.8))
-    tf_code = code_box.text_frame
-    tf_code.word_wrap = True
-    tf_code.margin_left = tf_code.margin_right = tf_code.margin_top = tf_code.margin_bottom = 0
-    
-    p_code_header = tf_code.paragraphs[0]
-    p_code_header.text = "REACT LIFECYCLE MOUNTING CODE"
-    p_code_header.font.bold = True
-    p_code_header.font.size = Pt(14)
-    p_code_header.font.color.rgb = RGBColor(228, 179, 99)
-    p_code_header.space_after = Pt(14)
-    
-    code_p = tf_code.add_paragraph()
-    code_p.text = (
-        "// React component mounting Vue app\n"
+    # Student info
+    box2 = s.shapes.add_textbox(Inches(8), Inches(5.4), Inches(4.5), Inches(1.2))
+    tf2 = box2.text_frame; tf2.word_wrap = True
+    pi = tf2.paragraphs[0]
+    pi.text = "Submitted by"
+    pi.font.name = 'Arial'; pi.font.size = Pt(10); pi.font.bold = True; pi.font.color.rgb = GOLD
+    pi.space_after = Pt(6)
+    pi2 = tf2.add_paragraph()
+    pi2.text = "Kolluri Chaturvedhi Narsimha  •  24EG109A28\nAnurag University, Hyderabad"
+    pi2.font.name = 'Arial'; pi2.font.size = Pt(12); pi2.font.color.rgb = GRAY
+
+    # ═══════════════════════════════════════════════════════════
+    # SLIDE 2 — TECH STACK
+    # ═══════════════════════════════════════════════════════════
+    s = prs.slides.add_slide(blank); bg(s)
+    tag(s, "Overview")
+    title(s, "Project Overview & Technology Stack")
+    subtitle(s, "Four distinct technology layers orchestrated into a unified cinema ticketing platform.")
+
+    add_text_block(s, 0.7, 2.2, 5.4, 4.5, [
+        ("React (Host SPA)", "Manages global state via Context API, hash-change routing, and interactive 3D seat animations with frosted-glass UI panels."),
+        ("Vue.js (Widgets)", "Micro-containers mounted inside React DOM refs for modular card checkout forms and password audit consoles."),
+        ("Java (Security)", "Luhn's card validation, private-field OOP encapsulation, ArrayList memory tracking, BufferedWriter logging, and synchronized thread locks."),
+        ("Python (Auditor)", "Password audit layer deriving concrete rules from an abstract base class. CLI console emulator with Matplotlib stats."),
+        ("AI & Prompt Engineering", "Utilized AI prompts for code debugging, architecture design optimization, and automated documentation generation.")
+    ], header="Technology Details")
+
+    add_img(s, "captures/screenshots/01_home_screen.png", 6.8, 2.2, 5.5)
+
+    # ═══════════════════════════════════════════════════════════
+    # SLIDE 3 — SYSTEM ARCHITECTURE
+    # ═══════════════════════════════════════════════════════════
+    s = prs.slides.add_slide(blank); bg(s)
+    tag(s, "Architecture")
+    title(s, "System Component Architecture")
+
+    add_img(s, "captures/system_architecture.png", 0.7, 1.8, 6.0)
+
+    # Caption
+    cap = s.shapes.add_textbox(Inches(0.7), Inches(6.4), Inches(6), Inches(0.3))
+    pc = cap.text_frame.paragraphs[0]
+    pc.text = "Fig 2.1 — CineBook Multi-Language Component Architecture"
+    pc.font.name = 'Arial'; pc.font.size = Pt(9); pc.font.italic = True; pc.font.color.rgb = MUTED
+    pc.alignment = PP_ALIGN.CENTER
+
+    add_text_block(s, 7.2, 1.8, 5.4, 5.0, [
+        ("Frontend Client Layer", "React SPA with hash routing and context store. Vue containers mounted dynamically for checkout and audit widgets."),
+        ("Java Security Layer", "OOP encapsulation with Luhn's checksum validation, ArrayList object tracking, BufferedWriter disk logging, and mutex seat locks."),
+        ("Python Audit Layer", "Abstract PasswordCheck base class with polymorphic rule derivation. CLI parser and Matplotlib canvas charts."),
+        ("Data & Storage", "Browser LocalStorage for bookings and sessions. Java file I/O writes card validation logs to cards.dat on disk.")
+    ], header="Component Layers")
+
+    # ═══════════════════════════════════════════════════════════
+    # SLIDE 4 — SEQUENCE FLOW
+    # ═══════════════════════════════════════════════════════════
+    s = prs.slides.add_slide(blank); bg(s)
+    tag(s, "Architecture")
+    title(s, "End-to-End Booking Sequence Flow")
+
+    add_img(s, "captures/booking_sequence_flow.png", 0.7, 1.8, 6.0)
+
+    cap2 = s.shapes.add_textbox(Inches(0.7), Inches(6.4), Inches(6), Inches(0.3))
+    pc2 = cap2.text_frame.paragraphs[0]
+    pc2.text = "Fig 2.2 — End-to-End Booking Validation & Security Flow"
+    pc2.font.name = 'Arial'; pc2.font.size = Pt(9); pc2.font.italic = True; pc2.font.color.rgb = MUTED
+    pc2.alignment = PP_ALIGN.CENTER
+
+    add_text_block(s, 7.2, 1.8, 5.4, 5.0, [
+        ("Phase 1 — Seat Lock", "Thread-0 acquires a synchronized mutex, locking selected seat coordinates for 5 minutes to prevent double-bookings."),
+        ("Phase 2 — Card Validation", "Vue checkout collects card details. Luhn's mod-10 checksum validates digits. Valid cards tracked in ArrayList and logged to disk."),
+        ("Phase 3 — Security Audit", "Dual validation: Java Weak/Strong classification + Python abstract auditor running LengthCheck, ComplexityCheck, PatternCheck rules."),
+        ("Phase 4 — Ticket Issue", "6-digit OTP verification → booking saved to LocalStorage → 3D parallax ticket with SVG QR code and scan verification generated.")
+    ], header="Transaction Phases")
+
+    # ═══════════════════════════════════════════════════════════
+    # SLIDE 5 — REACT + VUE CODE
+    # ═══════════════════════════════════════════════════════════
+    s = prs.slides.add_slide(blank); bg(s)
+    tag(s, "Code Walkthrough")
+    title(s, "React & Vue Interoperability")
+
+    add_text_block(s, 0.7, 1.8, 5.0, 4.5, [
+        ("React DOM Wrapper", "A ref-backed container div is rendered by React, holding the mount point for Vue instances."),
+        ("Vue Lifecycle", "Inside useEffect, createApp() initializes the Vue widget and mounts it. On cleanup, app.unmount() frees memory."),
+        ("State Bridge", "Custom browser events (dispatchEvent) synchronize seat counts and invoice data across frameworks.")
+    ], header="How It Works")
+
+    code_react = (
+        "// React component mounting a Vue widget\n"
         "const VueWrapper = () => {\n"
-        "  const containerRef = useRef(null);\n\n"
+        "  const containerRef = useRef(null);\n"
+        "\n"
         "  useEffect(() => {\n"
-        "    // Create and mount Vue widget instance\n"
+        "    // Create and mount Vue app instance\n"
         "    const app = createApp(CardCheckout);\n"
-        "    app.mount(containerRef.current);\n\n"
+        "    app.mount(containerRef.current);\n"
+        "\n"
         "    return () => {\n"
-        "      app.unmount(); // Unmount on clean up\n"
+        "      app.unmount(); // Cleanup on unmount\n"
         "    };\n"
-        "  }, []);\n\n"
+        "  }, []);\n"
+        "\n"
         "  return <div ref={containerRef} />;\n"
         "};"
     )
-    code_p.font.name = 'Courier New'
-    code_p.font.size = Pt(11)
-    code_p.font.color.rgb = RGBColor(240, 240, 240)
+    add_code(s, 6.2, 1.8, 6.4, 4.8, code_react)
 
-    # =========================================================================
-    # SLIDE 6: JAVA SECURITY MODULES
-    # =========================================================================
-    slide6 = prs.slides.add_slide(blank_layout)
-    apply_background(slide6)
-    add_slide_header(slide6, "Technical Focus: Java Security Layer")
-    
-    # Left: Code block
-    code_box_java = slide6.shapes.add_textbox(Inches(0.8), Inches(1.8), Inches(6.0), Inches(4.8))
-    tf_code_java = code_box_java.text_frame
-    tf_code_java.word_wrap = True
-    tf_code_java.margin_left = tf_code_java.margin_right = tf_code_java.margin_top = tf_code_java.margin_bottom = 0
-    
-    p_code_java_header = tf_code_java.paragraphs[0]
-    p_code_java_header.text = "LUHN ALGORITHM CARD CHECK"
-    p_code_java_header.font.bold = True
-    p_code_java_header.font.size = Pt(14)
-    p_code_java_header.font.color.rgb = RGBColor(228, 179, 99)
-    p_code_java_header.space_after = Pt(14)
-    
-    code_java_p = tf_code_java.add_paragraph()
-    code_java_p.text = (
+    # ═══════════════════════════════════════════════════════════
+    # SLIDE 6 — JAVA SECURITY
+    # ═══════════════════════════════════════════════════════════
+    s = prs.slides.add_slide(blank); bg(s)
+    tag(s, "Code Walkthrough")
+    title(s, "Java Security Engine")
+
+    code_java = (
+        "// Luhn Algorithm — Card Validation\n"
         "public boolean checkLuhn(String cardNo) {\n"
         "    int nDigits = cardNo.length();\n"
-        "    int nSum = 0; boolean isSecond = false;\n"
+        "    int nSum = 0;\n"
+        "    boolean isSecond = false;\n"
+        "\n"
         "    for (int i = nDigits - 1; i >= 0; i--) {\n"
         "        int d = cardNo.charAt(i) - '0';\n"
-        "        if (isSecond == true) d = d * 2;\n"
+        "        if (isSecond) d = d * 2;\n"
         "        nSum += d / 10;\n"
         "        nSum += d % 10;\n"
         "        isSecond = !isSecond;\n"
@@ -367,281 +280,122 @@ def main():
         "    return (nSum % 10 == 0);\n"
         "}"
     )
-    code_java_p.font.name = 'Courier New'
-    code_java_p.font.size = Pt(11)
-    code_java_p.font.color.rgb = RGBColor(240, 240, 240)
-    
-    # Right: Java Details
-    java_details_box = slide6.shapes.add_textbox(Inches(7.3), Inches(1.8), Inches(5.2), Inches(4.8))
-    tf_java_details = java_details_box.text_frame
-    tf_java_details.word_wrap = True
-    tf_java_details.margin_left = tf_java_details.margin_right = tf_java_details.margin_top = tf_java_details.margin_bottom = 0
-    
-    p_java_details_title = tf_java_details.paragraphs[0]
-    p_java_details_title.text = "CORE JAVA IMPL"
-    p_java_details_title.font.bold = True
-    p_java_details_title.font.size = Pt(14)
-    p_java_details_title.font.color.rgb = RGBColor(228, 179, 99)
-    p_java_details_title.space_after = Pt(12)
-    
-    java_points = [
-        ("Luhn Check Algorithm", "Executes mod-10 double-every-second digit sum validations on inputs to prevent fake/invalid card numbers."),
-        ("OOP Encapsulation Pattern", "Strictly keeps attributes private, accessing them via clean getter/setter objects to block arbitrary edits."),
-        ("ArrayList Allocation", "Stores validated instances to memory dynamically, mapping object heap locations to logs."),
-        ("File System Logging", "Streams logs out to cards.dat on disk using Java's BufferedWriter class, securing records.")
-    ]
-    for header, desc in java_points:
-        pt = tf_java_details.add_paragraph()
-        pt.text = "• " + header + "\n"
-        pt.font.bold = True
-        pt.font.size = Pt(12)
-        pt.font.color.rgb = RGBColor(255, 255, 255)
-        pt.space_before = Pt(4)
-        
-        run = pt.add_run()
-        run.text = desc
-        run.font.bold = False
-        run.font.color.rgb = RGBColor(170, 170, 170)
-        pt.space_after = Pt(10)
+    add_code(s, 0.7, 1.8, 5.8, 4.8, code_java)
 
-    # =========================================================================
-    # SLIDE 7: PYTHON AUDIT MODULES
-    # =========================================================================
-    slide7 = prs.slides.add_slide(blank_layout)
-    apply_background(slide7)
-    add_slide_header(slide7, "Technical Focus: Python Audit Layer")
-    
-    # Left: Explanation
-    py_info_box = slide7.shapes.add_textbox(Inches(0.8), Inches(1.8), Inches(5.2), Inches(4.8))
-    tf_py_info = py_info_box.text_frame
-    tf_py_info.word_wrap = True
-    tf_py_info.margin_left = tf_py_info.margin_right = tf_py_info.margin_top = tf_py_info.margin_bottom = 0
-    
-    p_py_header = tf_py_info.paragraphs[0]
-    p_py_header.text = "AUDIT SPECIFICATION"
-    p_py_header.font.bold = True
-    p_py_header.font.size = Pt(14)
-    p_py_header.font.color.rgb = RGBColor(228, 179, 99)
-    p_py_header.space_after = Pt(12)
-    
-    py_details = [
-        ("Polymorphic Abstract Structure", "Utilizes abstract classes defining baseline check functions. Concrete sub-classes overwrite checking parameters."),
-        ("Entropy & Pattern Scanning", "Applies regular expressions to scan passwords for repeated sequences, length rules, and character sets."),
-        ("Matplotlib Graph Generation", "Saves audit results and vulnerability scores as a bar chart, saving a PNG which is rendered in the app's HTML canvas.")
-    ]
-    for header, desc in py_details:
-        pt = tf_py_info.add_paragraph()
-        pt.text = "• " + header + "\n"
-        pt.font.bold = True
-        pt.font.size = Pt(12)
-        pt.font.color.rgb = RGBColor(255, 255, 255)
-        pt.space_before = Pt(6)
-        
-        run = pt.add_run()
-        run.text = desc
-        run.font.bold = False
-        run.font.color.rgb = RGBColor(170, 170, 170)
-        pt.space_after = Pt(10)
-        
-    # Right: Python code block
-    py_code_box = slide7.shapes.add_textbox(Inches(6.5), Inches(1.8), Inches(6.0), Inches(4.8))
-    tf_py_code = py_code_box.text_frame
-    tf_py_code.word_wrap = True
-    tf_py_code.margin_left = tf_py_code.margin_right = tf_py_code.margin_top = tf_py_code.margin_bottom = 0
-    
-    p_py_code_header = tf_py_code.paragraphs[0]
-    p_py_code_header.text = "ABSTRACT AUDITING ENGINE"
-    p_py_code_header.font.bold = True
-    p_py_code_header.font.size = Pt(14)
-    p_py_code_header.font.color.rgb = RGBColor(228, 179, 99)
-    p_py_code_header.space_after = Pt(14)
-    
-    py_code_p = tf_py_code.add_paragraph()
-    py_code_p.text = (
-        "from abc import ABC, abstractmethod\n\n"
+    add_text_block(s, 7.0, 1.8, 5.6, 5.0, [
+        ("Luhn Check Algorithm", "Executes mod-10 double-every-second digit sum validations on inputs to prevent fake or invalid card numbers."),
+        ("OOP Encapsulation", "Strictly keeps attributes private, accessing them via clean getter/setter objects to block arbitrary edits."),
+        ("ArrayList Tracking", "Stores validated Card instances to memory dynamically, mapping object heap locations to console logs."),
+        ("BufferedWriter I/O", "Streams transaction logs out to cards.dat on disk using Java's file output stream, securing records permanently."),
+        ("Thread Synchronization", "Synchronized blocks on Thread-0 acquire mutex locks on seat coordinates, preventing concurrent double-bookings.")
+    ], header="Core Java Concepts")
+
+    # ═══════════════════════════════════════════════════════════
+    # SLIDE 7 — PYTHON AUDIT
+    # ═══════════════════════════════════════════════════════════
+    s = prs.slides.add_slide(blank); bg(s)
+    tag(s, "Code Walkthrough")
+    title(s, "Python Audit Layer")
+
+    add_text_block(s, 0.7, 1.8, 5.0, 4.5, [
+        ("Abstract Base Class", "PasswordCheck defines an abstract validate() method. Concrete subclasses override it with specific checking rules."),
+        ("Regex Pattern Scanning", "Regular expressions detect repeated sequences, missing character classes (uppercase, digits, specials), and dictionary words."),
+        ("Matplotlib Visualization", "Audit scores compiled into a bar chart rendered as PNG, embedded into the app's HTML5 canvas for dashboard display.")
+    ], header="Audit Architecture")
+
+    code_python = (
+        "from abc import ABC, abstractmethod\n"
+        "\n"
         "class PasswordCheck(ABC):\n"
         "    @abstractmethod\n"
         "    def validate(self, pwd: str) -> bool:\n"
-        "        pass\n\n"
+        "        pass\n"
+        "\n"
         "class LengthCheck(PasswordCheck):\n"
         "    def validate(self, pwd: str) -> bool:\n"
-        "        return len(pwd) >= 8\n\n"
+        "        return len(pwd) >= 8\n"
+        "\n"
         "class ComplexityCheck(PasswordCheck):\n"
         "    def validate(self, pwd: str) -> bool:\n"
-        "        # RegEx checks for lower/upper/digit/special\n"
-        "        return bool(re.search(r'[A-Z]', pwd))"
+        "        return bool(\n"
+        "            re.search(r'[A-Z]', pwd) and\n"
+        "            re.search(r'[0-9]', pwd) and\n"
+        "            re.search(r'[!@#$%]', pwd)\n"
+        "        )"
     )
-    py_code_p.font.name = 'Courier New'
-    py_code_p.font.size = Pt(11)
-    py_code_p.font.color.rgb = RGBColor(240, 240, 240)
+    add_code(s, 6.2, 1.8, 6.4, 5.0, code_python)
 
-    # =========================================================================
-    # SLIDE 8: INTERACTIVE SCREENSHOTS
-    # =========================================================================
-    slide8 = prs.slides.add_slide(blank_layout)
-    apply_background(slide8)
-    add_slide_header(slide8, "Application Features & Interface Designs")
-    
-    # 4-image Grid Layout
-    # Top-Left: Home
-    if os.path.exists("captures/screenshots/01_home_screen.png"):
-        slide8.shapes.add_picture("captures/screenshots/01_home_screen.png", Inches(0.8), Inches(1.8), width=Inches(2.7))
-    # Top-Right: Seat Map
-    if os.path.exists("captures/screenshots/05_seat_map_selected_recommended.png"):
-        slide8.shapes.add_picture("captures/screenshots/05_seat_map_selected_recommended.png", Inches(3.7), Inches(1.8), width=Inches(2.7))
-    # Bottom-Left: Ticket
-    if os.path.exists("captures/screenshots/13_ticket_3d_modal_unscanned.png"):
-        slide8.shapes.add_picture("captures/screenshots/13_ticket_3d_modal_unscanned.png", Inches(0.8), Inches(4.3), width=Inches(2.7))
-    # Bottom-Right: Python Audit
-    if os.path.exists("captures/screenshots/16_python_audit_results.png"):
-        slide8.shapes.add_picture("captures/screenshots/16_python_audit_results.png", Inches(3.7), Inches(4.3), width=Inches(2.7))
-        
-    # Text Details
-    grid_details_box = slide8.shapes.add_textbox(Inches(6.8), Inches(1.8), Inches(5.7), Inches(4.8))
-    tf_grid_details = grid_details_box.text_frame
-    tf_grid_details.word_wrap = True
-    tf_grid_details.margin_left = tf_grid_details.margin_right = tf_grid_details.margin_top = tf_grid_details.margin_bottom = 0
-    
-    p_grid_details_title = tf_grid_details.paragraphs[0]
-    p_grid_details_title.text = "CORE USER CAPABILITIES"
-    p_grid_details_title.font.bold = True
-    p_grid_details_title.font.size = Pt(14)
-    p_grid_details_title.font.color.rgb = RGBColor(228, 179, 99)
-    p_grid_details_title.space_after = Pt(12)
-    
-    grid_details = [
-        ("Home & Showtime Selector", "Frosted glass visual layouts dynamically loading show details. Responsive grids align items smoothly."),
-        ("3D Curved Seating Map", "Interactive seats mapped to custom hooks. Visualizes selected seats, recommended paths, and price categories."),
-        ("Parallax 3D Ticket Modal", "Features responsive card tilts. Users can hover to examine validation details and click to verify QR passes."),
-        ("Password Auditing Dashboard", "Simulates server security terminal overlays. Computes entropy levels and compiles charts of weak parameters.")
+    # ═══════════════════════════════════════════════════════════
+    # SLIDE 8 — SCREENSHOTS
+    # ═══════════════════════════════════════════════════════════
+    s = prs.slides.add_slide(blank); bg(s)
+    tag(s, "Live Demo")
+    title(s, "Application Interface & Features")
+
+    # 2x2 image grid
+    imgs = [
+        ("captures/screenshots/01_home_screen.png", 0.7, 2.0, 2.9),
+        ("captures/screenshots/05_seat_map_selected_recommended.png", 3.8, 2.0, 2.9),
+        ("captures/screenshots/09_vue_card_form_filled.png", 0.7, 4.3, 2.9),
+        ("captures/screenshots/13_ticket_3d_modal_unscanned.png", 3.8, 4.3, 2.9),
     ]
-    for header, desc in grid_details:
-        pt = tf_grid_details.add_paragraph()
-        pt.text = "• " + header + "\n"
-        pt.font.bold = True
-        pt.font.size = Pt(12)
-        pt.font.color.rgb = RGBColor(255, 255, 255)
-        pt.space_before = Pt(4)
-        
-        run = pt.add_run()
-        run.text = desc
-        run.font.bold = False
-        run.font.color.rgb = RGBColor(170, 170, 170)
-        pt.space_after = Pt(10)
+    for path, l, t, w in imgs:
+        add_img(s, path, l, t, w)
 
-    # =========================================================================
-    # SLIDE 9: CHALLENGES & RESOLUTIONS
-    # =========================================================================
-    slide9 = prs.slides.add_slide(blank_layout)
-    apply_background(slide9)
-    add_slide_header(slide9, "Technical Challenges & Engineering Mitigations")
-    
-    challenges_box = slide9.shapes.add_textbox(Inches(0.8), Inches(1.8), Inches(11.73), Inches(4.8))
-    tf_challenges = challenges_box.text_frame
-    tf_challenges.word_wrap = True
-    tf_challenges.margin_left = tf_challenges.margin_right = tf_challenges.margin_top = tf_challenges.margin_bottom = 0
-    
-    p_chal_title = tf_challenges.paragraphs[0]
-    p_chal_title.text = "ENGINEERING MITIGATIONS"
-    p_chal_title.font.bold = True
-    p_chal_title.font.size = Pt(14)
-    p_chal_title.font.color.rgb = RGBColor(228, 179, 99)
-    p_chal_title.space_after = Pt(14)
-    
-    chals = [
-        ("Double-Booking Race Condition", 
-         "Challenge: Simultaneous booking attempts by multiple user contexts created double-booking conflicts.\n"
-         "Mitigation: Implemented Mutex seating locks. Thread-0 acquires validation limits via Java synchronized blocks, preventing multi-user overlaps."),
-        ("React-Vue Interoperability", 
-         "Challenge: Mounting independent reactive frameworks side-by-side inside DOM trees produced component lifecycle collisions.\n"
-         "Mitigation: Managed DOM wrappers with React useRef and loaded Vue apps inside useEffect hooks. Cleaned memory caches on component unmounting."),
-        ("Validation Exception Propagation", 
-         "Challenge: Formatting errors in deep class libraries failed to notify frontend layers.\n"
-         "Mitigation: Structured custom exceptions that trace errors to sideboards, displaying error logs directly in client consoles.")
-    ]
-    for title, desc in chals:
-        pt = tf_challenges.add_paragraph()
-        pt.text = "• " + title + "\n"
-        pt.font.bold = True
-        pt.font.size = Pt(12.5)
-        pt.font.color.rgb = RGBColor(255, 255, 255)
-        
-        run = pt.add_run()
-        run.text = desc
-        run.font.bold = False
-        run.font.size = Pt(11.5)
-        run.font.color.rgb = RGBColor(170, 170, 170)
-        pt.space_after = Pt(14)
+    add_text_block(s, 7.2, 2.0, 5.4, 4.8, [
+        ("Home Screen", "Frosted-glass movie cards with responsive grid layout, genre badges, ratings, and Apple HIG-inspired visual design."),
+        ("3D Curved Seating Map", "Interactive seat grid with quantity stepper sync, recommended seat algorithm, and 3D flip animations on selection."),
+        ("Vue Card Checkout", "Real-time Luhn validation, auto-formatting, demo presets (Visa/Mastercard/RuPay), and dual password audit."),
+        ("Parallax 3D Ticket", "Mouse-tracking perspective tilt, notched stub design, embedded SVG QR code, and click-to-verify scan animation.")
+    ], header="Feature Highlights")
 
-    # =========================================================================
-    # SLIDE 10: CONCLUSION & FUTURE DIRECTIONS
-    # =========================================================================
-    slide10 = prs.slides.add_slide(blank_layout)
-    apply_background(slide10)
-    add_slide_header(slide10, "Conclusion & Learnings")
-    
-    # Left: Key learnings
-    concl_box = slide10.shapes.add_textbox(Inches(0.8), Inches(1.8), Inches(5.6), Inches(4.8))
-    tf_concl = concl_box.text_frame
-    tf_concl.word_wrap = True
-    tf_concl.margin_left = tf_concl.margin_right = tf_concl.margin_top = tf_concl.margin_bottom = 0
-    
-    p_concl_title = tf_concl.paragraphs[0]
-    p_concl_title.text = "CORE INTERNSHIP LEARNINGS"
-    p_concl_title.font.bold = True
-    p_concl_title.font.size = Pt(14)
-    p_concl_title.font.color.rgb = RGBColor(228, 179, 99)
-    p_concl_title.space_after = Pt(14)
-    
-    learnings = [
-        ("Software Engineering Design", "Learned how to split responsibilities across independent, specialized layers (Web UI, Security logic, and Auditor modules)."),
-        ("Cross-Framework Integration", "Gained deep understanding of DOM lifecycles by mounting, bridging, and cleaning memory parameters between React and Vue."),
-        ("Robust OOP & Concurrency", "Gained practical experience using Java synchronized locks, encapsulation patterns, custom exception structures, and list serialization."),
-        ("AI-Assisted Prompting Flow", "Learned to leverage prompt engineering techniques to draft mock parameters, speed up debugging, and format logs.")
-    ]
-    for title, desc in learnings:
-        pt = tf_concl.add_paragraph()
-        pt.text = "• " + title + "\n"
-        pt.font.bold = True
-        pt.font.size = Pt(12)
-        pt.font.color.rgb = RGBColor(255, 255, 255)
-        pt.space_before = Pt(4)
-        
-        run = pt.add_run()
-        run.text = desc
-        run.font.bold = False
-        run.font.color.rgb = RGBColor(170, 170, 170)
-        pt.space_after = Pt(8)
+    # ═══════════════════════════════════════════════════════════
+    # SLIDE 9 — CHALLENGES
+    # ═══════════════════════════════════════════════════════════
+    s = prs.slides.add_slide(blank); bg(s)
+    tag(s, "Engineering")
+    title(s, "Technical Challenges & Solutions")
 
-    # Right: Thank you / Q&A block
-    qa_box = slide10.shapes.add_textbox(Inches(7.2), Inches(1.8), Inches(5.3), Inches(4.8))
-    tf_qa = qa_box.text_frame
-    tf_qa.word_wrap = True
-    tf_qa.margin_left = tf_qa.margin_right = tf_qa.margin_top = tf_qa.margin_bottom = 0
-    
-    p_qa_title = tf_qa.paragraphs[0]
-    p_qa_title.text = "QUESTIONS & ANSWERS"
-    p_qa_title.font.bold = True
-    p_qa_title.font.size = Pt(14)
-    p_qa_title.font.color.rgb = RGBColor(228, 179, 99)
-    p_qa_title.space_after = Pt(24)
-    
-    p_thank = tf_qa.add_paragraph()
-    p_thank.text = "Thank You."
-    p_thank.font.bold = True
-    p_thank.font.size = Pt(36)
-    p_thank.font.color.rgb = RGBColor(255, 255, 255)
-    p_thank.space_after = Pt(12)
-    
-    p_contact = tf_qa.add_paragraph()
-    p_contact.text = "Feel free to ask any technical questions regarding the hybrid architecture, card check validations, password auditing algorithms, or prompt engineering methods."
-    p_contact.font.size = Pt(13)
-    p_contact.font.color.rgb = RGBColor(200, 200, 200)
+    add_text_block(s, 0.7, 2.0, 11.8, 5.0, [
+        ("Double-Booking Race Condition",
+         "Challenge: Simultaneous booking attempts caused seat overlap conflicts.  |  Solution: Java synchronized blocks with Thread-0 mutex locks hold seats for 5 minutes, blocking concurrent access."),
+        ("React-Vue DOM Collision",
+         "Challenge: Independent reactive frameworks caused lifecycle conflicts when mounted side-by-side.  |  Solution: Managed mount/unmount via React useRef + useEffect. Vue apps cleaned up on component destroy."),
+        ("Exception Propagation",
+         "Challenge: Deep validation errors in Java/Python layers failed to surface in the frontend UI.  |  Solution: Structured custom exceptions with stack trace logging to sidebar console for real-time debugging."),
+        ("Multi-Language Integration",
+         "Challenge: Coordinating data flow across React, Vue, Java, and Python required careful interface design.  |  Solution: Custom browser events bridge state between frameworks; standardized JSON payloads for cross-language communication.")
+    ], header="Engineering Mitigations")
 
-    # Save presentation
-    output_filename = "CineBook_Pro_Internship_Presentation.pptx"
-    prs.save(output_filename)
-    print(f"SUCCESS: Presentation saved as '{output_filename}'")
+    # ═══════════════════════════════════════════════════════════
+    # SLIDE 10 — THANK YOU
+    # ═══════════════════════════════════════════════════════════
+    s = prs.slides.add_slide(blank); bg(s)
+
+    box = s.shapes.add_textbox(Inches(2), Inches(2.0), Inches(9.3), Inches(3.5))
+    tf = box.text_frame; tf.word_wrap = True
+
+    p = tf.paragraphs[0]
+    p.text = "Thank You"
+    p.font.name = 'Arial'; p.font.size = Pt(56); p.font.bold = True; p.font.color.rgb = GOLD
+    p.alignment = PP_ALIGN.CENTER
+    p.space_after = Pt(18)
+
+    p2 = tf.add_paragraph()
+    p2.text = "Questions about the hybrid architecture, security modules,\ncode integration, or prompt engineering workflow?"
+    p2.font.name = 'Arial'; p2.font.size = Pt(16); p2.font.color.rgb = GRAY
+    p2.alignment = PP_ALIGN.CENTER
+    p2.space_after = Pt(32)
+
+    p3 = tf.add_paragraph()
+    p3.text = "Kolluri Chaturvedhi Narsimha  •  24EG109A28  •  github.com/Chatur7x/CineProo"
+    p3.font.name = 'Arial'; p3.font.size = Pt(12); p3.font.color.rgb = MUTED
+    p3.alignment = PP_ALIGN.CENTER
+
+    # ── SAVE ──
+    out = "CineBook_Pro_Presentation.pptx"
+    prs.save(out)
+    print(f"SUCCESS — Saved: {out}")
 
 if __name__ == '__main__':
     main()
