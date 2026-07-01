@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineBook Pro — Internship Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-dark: #0a0a0f;
+  --bg-card: rgba(255,255,255,0.04);
+  --bg-card-hover: rgba(255,255,255,0.08);
+  --glass: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.1);
+  --accent: #e4b363;
+  --accent-glow: rgba(228,179,99,0.3);
+  --accent2: #7c6bff;
+  --accent3: #4ecdc4;
+  --accent4: #ff6b6b;
+  --text-primary: #f0f0f5;
+  --text-secondary: rgba(240,240,245,0.6);
+  --text-muted: rgba(240,240,245,0.35);
+  --radius: 20px;
+  --radius-sm: 12px;
+}
+
+html, body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── SLIDE CONTAINER ─── */
+.deck { position: relative; width: 100vw; height: 100vh; }
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 80px;
+  opacity: 0;
+  transform: translateY(40px) scale(0.97);
+  transition: opacity 0.6s cubic-bezier(.4,0,.2,1), transform 0.6s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+  overflow-y: auto;
+}
+.slide.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* ─── BACKGROUNDS ─── */
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.slide-cover::before {
+  background: radial-gradient(ellipse at 20% 50%, rgba(124,107,255,0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(228,179,99,0.12) 0%, transparent 50%),
+              radial-gradient(ellipse at 60% 90%, rgba(78,205,196,0.08) 0%, transparent 50%),
+              var(--bg-dark);
+}
+.slide-tech::before {
+  background: radial-gradient(ellipse at 70% 30%, rgba(124,107,255,0.12) 0%, transparent 55%),
+              radial-gradient(ellipse at 10% 80%, rgba(228,179,99,0.08) 0%, transparent 50%),
+              var(--bg-dark);
+}
+.slide-arch::before {
+  background: radial-gradient(ellipse at 30% 40%, rgba(78,205,196,0.1) 0%, transparent 55%),
+              radial-gradient(ellipse at 90% 70%, rgba(124,107,255,0.08) 0%, transparent 50%),
+              var(--bg-dark);
+}
+.slide-code::before {
+  background: radial-gradient(ellipse at 50% 30%, rgba(228,179,99,0.1) 0%, transparent 55%),
+              radial-gradient(ellipse at 80% 80%, rgba(255,107,107,0.06) 0%, transparent 50%),
+              var(--bg-dark);
+}
+.slide-end::before {
+  background: radial-gradient(ellipse at 50% 50%, rgba(228,179,99,0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 80%, rgba(124,107,255,0.1) 0%, transparent 50%),
+              var(--bg-dark);
+}
+
+/* ─── TYPOGRAPHY ─── */
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+.slide-title {
+  font-size: clamp(32px, 4vw, 56px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, rgba(240,240,245,0.7) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.slide-subtitle {
+  font-size: clamp(16px, 1.8vw, 22px);
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 700px;
+}
+
+/* ─── GLASS CARDS ─── */
+.glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  transition: all 0.3s ease;
+}
+.glass-card:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-2px);
+}
+.glass-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.glass-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+/* ─── GRID LAYOUTS ─── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-2-1 { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; align-items: start; }
+.grid-1-2 { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 40px; align-items: start; }
+
+/* ─── CODE BLOCKS ─── */
+.code-block {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-sm);
+  padding: 24px 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #e0e0e0;
+  overflow-x: auto;
+  white-space: pre;
+}
+.code-block .kw { color: #c792ea; }
+.code-block .fn { color: #82aaff; }
+.code-block .str { color: #c3e88d; }
+.code-block .cm { color: #546e7a; }
+.code-block .num { color: #f78c6c; }
+.code-block .op { color: #89ddff; }
+
+/* ─── ACCENT PILL ─── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid;
+}
+.pill-gold   { color: var(--accent);  border-color: rgba(228,179,99,0.3);  background: rgba(228,179,99,0.08); }
+.pill-purple { color: var(--accent2); border-color: rgba(124,107,255,0.3); background: rgba(124,107,255,0.08); }
+.pill-teal   { color: var(--accent3); border-color: rgba(78,205,196,0.3);  background: rgba(78,205,196,0.08); }
+.pill-red    { color: var(--accent4); border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.08); }
+
+/* ─── IMAGE ─── */
+.slide-img {
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  max-width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.img-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.img-grid img {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease;
+}
+.img-grid img:hover { transform: scale(1.03); }
+
+/* ─── COVER SLIDE SPECIFIC ─── */
+.cover-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+.cover-title {
+  font-size: clamp(48px, 6vw, 80px);
+  font-weight: 900;
+  letter-spacing: -3px;
+  line-height: 1.05;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, #fff 0%, rgba(228,179,99,0.9) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.cover-sub {
+  font-size: clamp(18px, 2vw, 26px);
+  color: var(--text-secondary);
+  font-weight: 400;
+  max-width: 680px;
+  line-height: 1.5;
+  margin-bottom: 40px;
+}
+.cover-meta {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+.cover-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cover-meta-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.cover-meta-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.cover-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--glass-border);
+}
+
+/* ─── PHASE TIMELINE ─── */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.timeline-item {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.timeline-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.timeline-dot-1 { background: rgba(124,107,255,0.2); color: var(--accent2); border: 1px solid rgba(124,107,255,0.3); }
+.timeline-dot-2 { background: rgba(228,179,99,0.2); color: var(--accent); border: 1px solid rgba(228,179,99,0.3); }
+.timeline-dot-3 { background: rgba(78,205,196,0.2); color: var(--accent3); border: 1px solid rgba(78,205,196,0.3); }
+.timeline-dot-4 { background: rgba(255,107,107,0.2); color: var(--accent4); border: 1px solid rgba(255,107,107,0.3); }
+.timeline-body h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.timeline-body p  { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; }
+
+/* ─── PROGRESS BAR ─── */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3));
+  z-index: 999;
+  transition: width 0.4s ease;
+}
+
+/* ─── SLIDE COUNTER ─── */
+.slide-counter {
+  position: fixed;
+  bottom: 28px;
+  right: 40px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  z-index: 999;
+  letter-spacing: 1px;
+}
+
+/* ─── NAV DOTS ─── */
+.nav-dots {
+  position: fixed;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 999;
+}
+.nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+.nav-dot.active {
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+  transform: scale(1.3);
+}
+.nav-dot:hover { background: rgba(255,255,255,0.3); }
+
+/* ─── SECTION LABEL ─── */
+.section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--glass-border), transparent);
+}
+
+/* ─── BULLET LIST ─── */
+.bullet-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.bullet-list li {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  padding-left: 20px;
+  position: relative;
+}
+.bullet-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.bullet-list li strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ─── THANK YOU ─── */
+.thanks-title {
+  font-size: clamp(56px, 7vw, 100px);
+  font-weight: 900;
+  letter-spacing: -4px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--accent3) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 20px;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 1200px) {
+  .slide { padding: 40px 48px; }
+  .grid-2, .grid-2-1, .grid-1-2 { grid-template-columns: 1fr; }
+}
+
+/* Print / Export */
+@media print {
+  .slide { page-break-after: always; position: relative; height: 100vh; opacity: 1; transform: none; pointer-events: auto; }
+  .nav-dots, .slide-counter, .progress-bar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="slide-counter" id="slideCounter"></div>
+<div class="nav-dots" id="navDots"></div>
+
+<div class="deck" id="deck">
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 1: COVER -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide slide-cover active">
+    <div class="cover-content">
+      <span class="tag">Internship Project Presentation</span>
+      <h1 class="cover-title">CineBook Pro</h1>
+      <p class="cover-sub">A Hybrid Multi-Language Movie Ticketing Platform with Integrated Security Architecture</p>
+      <div class="cover-meta">
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">Submitted by</span>
+          <span class="cover-meta-value">Kolluri Chaturvedhi Narsimha</span>
+        </div>
+        <div class="cover-divider"></div>
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">Hall Ticket</span>
+          <span class="cover-meta-value">24EG109A28</span>
+        </div>
+        <div class="cover-divider"></div>
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">Department</span>
+          <span class="cover-meta-value">CSE — Cyber Security</span>
+        </div>
+        <div class="cover-divider"></div>
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">University</span>
+          <span class="cover-meta-value">Anurag University</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 2: TECH STACK -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide slide-tech">
+    <span class="tag">Overview</span>
+    <h2 class="slide-title">Technology Stack</h2>
+    <p class="slide-subtitle" style="margin-bottom:36px;">Four distinct technology layers orchestrated into a single ticketing platform.</p>
+
+    <div class="grid-4">
+      <div class="glass-card">
+        <h3><span class="pill pill-purple">⚛️ React</span></h3>
+        <p>Single-page application host managing global state via Context API, hash-change routing, and interactive 3D seat animations with frosted-glass UI panels.</p>
+      </div>
+      <div class="glass-card">
+        <h3><span class="pill pill-teal">💚 Vue.js</span></h3>
+        <p>Micro-widget containers mounted inside React DOM refs for modular card checkout forms and password audit consoles. Lifecycle managed via useEffect hooks.</p>
+      </div>
+      <div class="glass-card">
+        <h3><span class="pill pill-gold">☕ Java</span></h3>
+        <p>Security engine implementing Luhn's card validation, private-field OOP encapsulation, ArrayList memory tracking, BufferedWriter file logging, and synchronized thread locks.</p>
+      </div>
+      <div class="glass-card">
+        <h3><span class="pill pill-red">🐍 Python</span></h3>
+        <p>Password audit layer deriving concrete rules (Length, Complexity, Pattern checks) from an abstract base class. CLI console emulator with Matplotlib stats visualization.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 3: SYSTEM ARCHITECTURE -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide slide-arch">
+    <span class="tag">Architecture</span>
+    <h2 class="slide-title">System Component Architecture</h2>
+    <div class="grid-2-1" style="margin-top:20px;">
+      <div>
+        <img src="captures/system_architecture.png" alt="System Architecture" class="slide-img" style="width:100%;">
+        <p style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:12px;font-style:italic;">Fig 2.1 — CineBook Multi-Language Component Architecture</p>
+      </div>
+      <div>
+        <div class="section-label">Component Layers</div>
+        <ul class="bullet-list">
+          <li><strong>Frontend Client:</strong> React SPA with hash routing and context store. Vue containers mounted dynamically for checkout and audit widgets.</li>
+          <li><strong>Java Security Layer:</strong> OOP encapsulation with Luhn's checksum validation, ArrayList object tracking, BufferedWriter disk logging, and mutex seat locks.</li>
+          <li><strong>Python Audit Layer:</strong> Abstract PasswordCheck base class with polymorphic rule derivation. CLI parser and Matplotlib canvas charts.</li>
+          <li><strong>Storage:</strong> Browser LocalStorage for bookings/sessions. Java file I/O writes card logs to cards.dat.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 4: SEQUENCE FLOW -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide slide-tech">
+    <span class="tag">Architecture</span>
+    <h2 class="slide-title">Booking Sequence Flow</h2>
+    <div class="grid-2-1" style="margin-top:20px;">
+      <div>
+        <img src="captures/booking_sequence_flow.png" alt="Sequence Flow" class="slide-img" style="width:100%;">
+        <p style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:12px;font-style:italic;">Fig 2.2 — End-to-End Booking Validation & Security Flow</p>
+      </div>
+      <div>
+        <div class="section-label">Transaction Phases</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot timeline-dot-1">1</div>
+            <div class="timeline-body">
+              <h4>Movie Selection & Seat Lock</h4>
+              <p>Thread-0 acquires a synchronized mutex, locking selected seat coordinates for 5 minutes to prevent double-bookings.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot timeline-dot-2">2</div>
+            <div class="timeline-body">
+              <h4>Payment & Card Validation</h4>
+              <p>Vue checkout collects card details. Luhn's mod-10 checksum validates digits. Valid cards are tracked in an ArrayList and logged to disk.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot timeline-dot-3">3</div>
+            <div class="timeline-body">
+              <h4>Password Security Audit</h4>
+              <p>Dual validation: Java Weak/Strong classification + Python abstract auditor running LengthCheck, ComplexityCheck, and PatternCheck rules.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot timeline-dot-4">4</div>
+            <div class="timeline-body">
+              <h4>OTP Verification & 3D Ticket</h4>
+              <p>6-digit OTP authentication → booking saved to LocalStorage → 3D parallax ticket with SVG QR code and scan verification.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 5: REACT + VUE CODE -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide slide-code">
+    <span class="tag">Code Walkthrough</span>
+    <h2 class="slide-title">React ↔ Vue Interoperability</h2>
+    <div class="grid-1-2" style="margin-top:20px;">
+      <div>
+        <div class="section-label">How It Works</div>
+        <ul class="bullet-list">
+          <li><strong>React DOM Wrapper:</strong> A ref-backed container div is rendered by React, holding the mount point for Vue instances.</li>
+          <li><strong>Vue Lifecycle:</strong> Inside useEffect, createApp() initializes the Vue widget and mounts it. On cleanup, app.unmount() frees memory.</li>
+          <li><strong>State Bridge:</strong> Custom browser events (dispatchEvent) synchronize seat counts and invoice data across frameworks.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="code-block"><span class="cm">// React component mounting a Vue widget</span>
+<span class="kw">const</span> <span class="fn">VueWrapper</span> = () => {
+  <span class="kw">const</span> containerRef = <span class="fn">useRef</span>(<span class="kw">null</span>);
+
+  <span class="fn">useEffect</span>(() => {
+    <span class="cm">// Create and mount Vue app instance</span>
+    <span class="kw">const</span> app = <span class="fn">createApp</span>(CardCheckout);
+    app.<span class="fn">mount</span>(containerRef.current);
+
+    <span class="kw">return</span> () => {
+      app.<span class="fn">unmount</span>(); <span class="cm">// Cleanup on unmount</span>
+    };
+  }, []);
+
+  <span class="kw">return</span> &lt;<span class="fn">div</span> <span class="str">ref</span>={containerRef} /&gt;;
+};</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 6: JAVA SECURITY -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide slide-arch">
+    <span class="tag">Code Walkthrough</span>
+    <h2 class="slide-title">Java Security Engine</h2>
+    <div class="grid-2" style="margin-top:20px;">
+      <div>
+        <div class="code-block"><span class="cm">// Luhn Algorithm — Card Number Validation</span>
+<span class="kw">public boolean</span> <span class="fn">checkLuhn</span>(<span class="kw">String</span> cardNo) {
+    <span class="kw">int</span> nDigits = cardNo.<span class="fn">length</span>();
+    <span class="kw">int</span> nSum = <span class="num">0</span>;
+    <span class="kw">boolean</span> isSecond = <span class="kw">false</span>;
+
+    <span class="kw">for</span> (<span class="kw">int</span> i = nDigits - <span class="num">1</span>; i >= <span class="num">0</span>; i--) {
+        <span class="kw">int</span> d = cardNo.<span class="fn">charAt</span>(i) - <span class="str">'0'</span>;
+        <span class="kw">if</span> (isSecond) d = d * <span class="num">2</span>;
+        nSum += d / <span class="num">10</span>;
+        nSum += d % <span class="num">10</span>;
+        isSecond = !isSecond;
+    }
+    <span class="kw">return</span> (nSum % <span class="num">10</span> == <span class="num">0</span>);
+}</div>
+      </div>
+      <div>
+        <div class="section-label">Java OOP Concepts Applied</div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="glass-card">
+            <h3>🔒 Encapsulation</h3>
+            <p>Private fields with public getter/setter methods. Card attributes are never directly exposed to external callers.</p>
+          </div>
+          <div class="glass-card">
+            <h3>📊 ArrayList Tracking</h3>
+            <p>Validated Card objects stored in an ArrayList. Memory allocation and heap positions are logged for visualization.</p>
+          </div>
+          <div class="glass-card">
+            <h3>📁 BufferedWriter I/O</h3>
+            <p>Transaction records serialized to cards.dat using Java's file I/O stream, ensuring persistent disk-level logging.</p>
+          </div>
+          <div class="glass-card">
+            <h3>🔐 Thread Synchronization</h3>
+            <p>Synchronized blocks on Thread-0 acquire mutex locks on seat coordinates, preventing concurrent double-bookings.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 7: PYTHON AUDIT -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide slide-code">
+    <span class="tag">Code Walkthrough</span>
+    <h2 class="slide-title">Python Audit Layer</h2>
+    <div class="grid-2" style="margin-top:20px;">
+      <div>
+        <div class="section-label">Abstraction & Inheritance</div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="glass-card">
+            <h3>🏗️ Abstract Base Class</h3>
+            <p>PasswordCheck defines an abstract validate() method. Concrete subclasses (LengthCheck, ComplexityCheck, PatternCheck) override it with specific rules.</p>
+          </div>
+          <div class="glass-card">
+            <h3>🔍 Regex Pattern Scan</h3>
+            <p>Regular expressions detect repeated sequences, missing character classes (uppercase, digits, specials), and dictionary words.</p>
+          </div>
+          <div class="glass-card">
+            <h3>📈 Matplotlib Visualization</h3>
+            <p>Audit scores compiled into a bar chart rendered as PNG, embedded into the app's HTML5 canvas for real-time dashboard display.</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="code-block"><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+
+<span class="kw">class</span> <span class="fn">PasswordCheck</span>(ABC):
+    <span class="str">"""Abstract base for all password rules"""</span>
+
+    @abstractmethod
+    <span class="kw">def</span> <span class="fn">validate</span>(self, pwd: <span class="kw">str</span>) -> <span class="kw">bool</span>:
+        <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">LengthCheck</span>(PasswordCheck):
+    <span class="kw">def</span> <span class="fn">validate</span>(self, pwd: <span class="kw">str</span>) -> <span class="kw">bool</span>:
+        <span class="kw">return</span> <span class="fn">len</span>(pwd) >= <span class="num">8</span>
+
+<span class="kw">class</span> <span class="fn">ComplexityCheck</span>(PasswordCheck):
+    <span class="kw">def</span> <span class="fn">validate</span>(self, pwd: <span class="kw">str</span>) -> <span class="kw">bool</span>:
+        <span class="cm"># Must contain uppercase + digit + special</span>
+        <span class="kw">return</span> <span class="fn">bool</span>(
+            re.<span class="fn">search</span>(<span class="str">r'[A-Z]'</span>, pwd) <span class="kw">and</span>
+            re.<span class="fn">search</span>(<span class="str">r'[0-9]'</span>, pwd) <span class="kw">and</span>
+            re.<span class="fn">search</span>(<span class="str">r'[!@#$%]'</span>, pwd)
+        )</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 8: APP SCREENSHOTS -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide slide-tech">
+    <span class="tag">Live Demo</span>
+    <h2 class="slide-title">Application Interface</h2>
+    <p class="slide-subtitle" style="margin-bottom:28px;">Key screens demonstrating the complete user journey from movie browsing to verified ticket generation.</p>
+    <div class="grid-2" style="gap:32px;">
+      <div class="img-grid">
+        <img src="captures/screenshots/01_home_screen.png" alt="Home Screen">
+        <img src="captures/screenshots/05_seat_map_selected_recommended.png" alt="Seat Map">
+        <img src="captures/screenshots/09_vue_card_form_filled.png" alt="Card Form">
+        <img src="captures/screenshots/13_ticket_3d_modal_unscanned.png" alt="3D Ticket">
+      </div>
+      <div>
+        <div class="section-label">Feature Highlights</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="glass-card">
+            <h3>🎬 Home Screen</h3>
+            <p>Frosted-glass movie cards with responsive grid layout, genre badges, and ratings. Apple HIG-inspired visual design.</p>
+          </div>
+          <div class="glass-card">
+            <h3>💺 3D Curved Seating Map</h3>
+            <p>Interactive seat grid with quantity stepper sync, recommended seat algorithm, and 3D flip animations on selection.</p>
+          </div>
+          <div class="glass-card">
+            <h3>💳 Vue Card Checkout</h3>
+            <p>Real-time Luhn validation, auto-formatting, demo presets (Visa/Mastercard/RuPay), and dual password audit.</p>
+          </div>
+          <div class="glass-card">
+            <h3>🎫 Parallax 3D Ticket</h3>
+            <p>Mouse-tracking perspective tilt, notched stub design, embedded SVG QR code, and click-to-verify scan animation.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 9: CHALLENGES -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide slide-arch">
+    <span class="tag">Engineering</span>
+    <h2 class="slide-title">Challenges & Solutions</h2>
+    <div class="grid-3" style="margin-top:28px;">
+      <div class="glass-card" style="border-top:3px solid var(--accent2);">
+        <h3 style="color:var(--accent2);">⚡ Double-Booking Race</h3>
+        <p style="margin-bottom:12px;"><strong style="color:var(--accent4);">Challenge:</strong> Simultaneous booking requests caused seat overlap conflicts across user sessions.</p>
+        <p><strong style="color:var(--accent3);">Solution:</strong> Implemented Java synchronized blocks with Thread-0 mutex locks. Seats are held for 5 minutes, blocking concurrent access.</p>
+      </div>
+      <div class="glass-card" style="border-top:3px solid var(--accent);">
+        <h3 style="color:var(--accent);">🔗 React-Vue Collision</h3>
+        <p style="margin-bottom:12px;"><strong style="color:var(--accent4);">Challenge:</strong> Independent reactive frameworks caused DOM lifecycle conflicts when mounted side-by-side.</p>
+        <p><strong style="color:var(--accent3);">Solution:</strong> Managed mount/unmount cycles via React useRef + useEffect. Vue apps cleaned up on component destroy to prevent memory leaks.</p>
+      </div>
+      <div class="glass-card" style="border-top:3px solid var(--accent3);">
+        <h3 style="color:var(--accent3);">🛡️ Exception Propagation</h3>
+        <p style="margin-bottom:12px;"><strong style="color:var(--accent4);">Challenge:</strong> Deep validation errors in Java/Python layers failed to surface in the frontend UI.</p>
+        <p><strong style="color:var(--accent3);">Solution:</strong> Structured custom exceptions with stack trace logging to sidebar console, enabling real-time developer debugging.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 10: THANK YOU -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide slide-end">
+    <div class="cover-content" style="align-items:center;text-align:center;">
+      <span class="tag">End of Presentation</span>
+      <h1 class="thanks-title">Thank You</h1>
+      <p class="cover-sub" style="max-width:600px;text-align:center;">
+        Questions about the hybrid architecture, security modules, code integration, or prompt engineering workflow?
+      </p>
+      <div class="cover-meta" style="margin-top:20px;">
+        <div class="cover-meta-item" style="align-items:center;">
+          <span class="cover-meta-label">Student</span>
+          <span class="cover-meta-value">Kolluri Chaturvedhi Narsimha</span>
+        </div>
+        <div class="cover-divider"></div>
+        <div class="cover-meta-item" style="align-items:center;">
+          <span class="cover-meta-label">HTNo</span>
+          <span class="cover-meta-value">24EG109A28</span>
+        </div>
+        <div class="cover-divider"></div>
+        <div class="cover-meta-item" style="align-items:center;">
+          <span class="cover-meta-label">GitHub</span>
+          <span class="cover-meta-value">github.com/Chatur7x/CineProo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(() => {
+  const deck = document.getElementById('deck');
+  const slides = [...deck.querySelectorAll('.slide')];
+  const progressBar = document.getElementById('progressBar');
+  const counter = document.getElementById('slideCounter');
+  const navDotsContainer = document.getElementById('navDots');
+  let current = 0;
+
+  // Build nav dots
+  slides.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    navDotsContainer.appendChild(dot);
+  });
+  const dots = [...navDotsContainer.querySelectorAll('.nav-dot')];
+
+  function goTo(index) {
+    if (index < 0 || index >= slides.length) return;
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = index;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+    progressBar.style.width = ((current / (slides.length - 1)) * 100) + '%';
+    counter.textContent = `${current + 1} / ${slides.length}`;
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prev(); }
+    if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    if (e.key === 'End') { e.preventDefault(); goTo(slides.length - 1); }
+  });
+
+  // Touch / Swipe
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].screenX;
+    if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
+  });
+
+  // Mouse wheel
+  let wheelTimeout;
+  document.addEventListener('wheel', e => {
+    if (wheelTimeout) return;
+    wheelTimeout = setTimeout(() => { wheelTimeout = null; }, 600);
+    e.deltaY > 0 ? next() : prev();
+  }, { passive: true });
+
+  // Init
+  goTo(0);
+})();
+</script>
+
+</body>
+</html>
