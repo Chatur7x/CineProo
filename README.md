@@ -49,19 +49,19 @@ Rather than a simple single-language application, this project is architected as
 
 ## 📸 Visual Tour & Screenshots
 
-Here is the step-by-step transaction flow inside the application interface:
+Here is the step-by-step transaction flow inside the application interface, using assets from the `presentation_images/` folder:
 
 | 1. Home Dashboard | 2. 3D Seating Map |
 | :---: | :---: |
-| <img src="captures/screenshots/01_home_screen.png" width="100%" alt="Home Dashboard"> | <img src="captures/screenshots/05_seat_map_selected_recommended.png" width="100%" alt="3D Seating Map"> |
+| <img src="presentation_images/03_home_screen.png" width="100%" alt="Home Dashboard"> | <img src="presentation_images/04_seat_map.png" width="100%" alt="3D Seating Map"> |
 | Frosted-glass movie cards with filters | Dynamic seat selection with recommended paths |
 | **3. Vue Checkout & Luhn Validation** | **4. Parallax 3D Ticket Pass** |
 | :---: | :---: |
-| <img src="captures/screenshots/09_vue_card_form_filled.png" width="100%" alt="Checkout"> | <img src="captures/screenshots/13_ticket_3d_modal_unscanned.png" width="100%" alt="3D Ticket"> |
+| <img src="presentation_images/05_checkout_card_form.png" width="100%" alt="Checkout"> | <img src="presentation_images/06_3d_ticket_pass.png" width="100%" alt="3D Ticket"> |
 | Real-time formatting & card type presets | Tilt-responsive ticket with SVG QR scanning |
 | **5. Python Password Audit** | **6. Audit Chart Visualization** |
 | :---: | :---: |
-| <img src="captures/screenshots/15_python_audit_page.png" width="100%" alt="CLI Console"> | <img src="captures/screenshots/16_python_audit_results.png" width="100%" alt="Audit Chart"> |
+| <img src="presentation_images/07_python_audit_console.png" width="100%" alt="CLI Console"> | <img src="presentation_images/08_matplotlib_vulnerability_chart.png" width="100%" alt="Audit Chart"> |
 | Embedded CLI terminal simulation | Matplotlib vulnerability bar graph |
 
 ---
